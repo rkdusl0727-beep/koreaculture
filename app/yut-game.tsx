@@ -3,6 +3,7 @@ import {useMemo,useRef,useState} from 'react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {FINISHED,WAITING,initialPieces,makeYutThrow,moveTarget,possibleRoutes,resolveMove,type Face,type Piece,type ResultName,type Route,type Team,type ThrowResult} from './yut-logic';
+import {speakKorean} from './korean-speech';
 import './yut-game.css';
 
 type Mode='start'|'practice'|'names'|'rules'|'game';
@@ -14,7 +15,7 @@ const raw=[[1040,1040],[1040,868],[1040,696],[1040,524],[1040,352],[1040,180],[8
 const nodes=raw.map(([x,y],id)=>({id,x:x/1254*100,y:y/1254*100}));
 const nodeMap=new Map(nodes.map(n=>[n.id,n]));
 
-function speak(text:string,on:boolean){if(!on||typeof window==='undefined'||!('speechSynthesis'in window))return;const synth=window.speechSynthesis;synth.cancel();const say=()=>{const ko=synth.getVoices().filter(v=>v.lang.toLowerCase().replace('_','-').startsWith('ko'));const female=['Yuna','Flo','Sandy','Shelley','Grandma','SunHi','Heami','Seoyeon','Sora','Yu-ri','유나','소라','서연','여성'];const male=/Eddy|Grandpa|Reed|Rocko|InJoon|Joon|Minho|남성|Male/i;const voice=female.map(n=>ko.find(v=>v.name.toLowerCase().includes(n.toLowerCase()))).find(Boolean)||ko.find(v=>!male.test(v.name))||ko[0];const u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';if(voice)u.voice=voice;u.rate=.84;u.pitch=1.04;synth.speak(u)};if(synth.getVoices().length)say();else synth.addEventListener('voiceschanged',say,{once:true})}
+const speak=speakKorean;
 function pawnSrc(team:Team,count:number){return`${asset}${team}_${count>1?'mal_stack':'mal'}.png`}
 function Pawn({team,count=1,selectable=false,onClick}:{team:Team;count?:number;selectable?:boolean;onClick?:()=>void}){return <button type="button" className={`png-pawn ${team} ${selectable?'selectable':''}`} onClick={onClick} disabled={!selectable} aria-label={`${team==='red'?'빨강':'파랑'}팀 말 ${count}개`}><img src={pawnSrc(team,count)} alt=""/>{count>1&&<b>2</b>}</button>}
 function ResultIcon({name}:{name:ResultName}){return <img className="result-png" src={`${asset}icons/${icon[name]}`} alt=""/>}

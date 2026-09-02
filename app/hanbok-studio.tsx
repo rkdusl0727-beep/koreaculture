@@ -3,6 +3,7 @@
 import {useMemo,useRef,useState} from 'react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
+import {speakKorean} from './korean-speech';
 import './hanbok-studio.css';
 
 type Props={home:()=>void;soundOn:boolean;toggleSound:()=>void};
@@ -41,7 +42,7 @@ const lessons=[
  ['저고리','몸의 위쪽에 입는 한복이에요.','top'],['치마','저고리와 함께 입어요.','bottom'],['바지','품이 넉넉해서 움직이기 편해요.','bottom'],['배자','저고리 위에 덧입어요.','middle'],['마고자','저고리 위에 입는 겉옷이에요.','middle'],['두루마기','한복 위에 입는 긴 겉옷이에요.','coat'],['버선','발에 신는 흰 옷이에요.','socks'],['꽃신','한복과 함께 신어요.','shoes'],['복건','머리에 쓰는 전통 쓰개예요.','head'],['조바위','추울 때 머리에 써요.','head'],['노리개','한복에 다는 장식이에요.','ornament'],['깃','저고리 목둘레를 감싸는 부분이에요.','collar'],['동정','깃 위에 댄 흰 선이에요.','dongjeong'],['고름','저고리 앞을 여미는 끈이에요.','ribbon'],['소매','팔을 감싸는 부분이에요.','sleeve'],['대님','바짓부리를 여미는 끈이에요.','daenim'],
 ] as const;
 
-function speak(text:string,on:boolean){if(!on||typeof window==='undefined'||!('speechSynthesis'in window))return;const synth=window.speechSynthesis;synth.cancel();const say=()=>{const ko=synth.getVoices().filter(v=>v.lang.toLowerCase().replace('_','-').startsWith('ko'));const female=['Yuna','Flo','Sandy','Shelley','Grandma','SunHi','Heami','Seoyeon','Sora','Yu-ri','유나','소라','서연','여성'];const male=/Eddy|Grandpa|Reed|Rocko|InJoon|Joon|Minho|남성|Male/i;const voice=female.map(n=>ko.find(v=>v.name.toLowerCase().includes(n.toLowerCase()))).find(Boolean)||ko.find(v=>!male.test(v.name))||ko[0];const u=new SpeechSynthesisUtterance(text.replaceAll('저고리','저고리,').replaceAll('두루마기','두루마기,'));u.lang='ko-KR';if(voice)u.voice=voice;u.rate=.84;u.pitch=1.05;u.volume=1;synth.speak(u)};if(synth.getVoices().length)say();else synth.addEventListener('voiceschanged',say,{once:true})}
+const speak=speakKorean;
 
 function Header({title,back,home,soundOn,toggleSound}:{title:string;back:()=>void;home:()=>void;soundOn:boolean;toggleSound:()=>void}){return <header className="hb-header"><Button variant="outline" onClick={home}>⌂ 처음으로</Button><Button variant="outline" onClick={back}>← 이전</Button><h1>{title}</h1><Button variant="outline" onClick={toggleSound}>{soundOn?'소리 켬':'소리 끔'}</Button></header>}
 function Layer({slot,worn,selected,onSelect}:{slot:Slot;worn:Worn;selected:boolean;onSelect:()=>void}){const style={'--tint':worn.color,'--mask':`url(${worn.garment.img})`} as React.CSSProperties;return <button type="button" className={`hb-layer slot-${slot} pattern-${patterns.indexOf(worn.pattern)} ${worn.repeat?'repeat':''} ${selected?'selected':''}`} style={style} onClick={e=>{e.stopPropagation();onSelect()}} aria-label={`${worn.garment.name} 선택`}><img src={worn.garment.img} alt="" draggable={false}/><i className="hb-tint"/><i className="hb-pattern"/></button>}
