@@ -36,6 +36,12 @@ function HiddenHeritage({soundOn,onBack,onComplete,onNext}:{soundOn:boolean;onBa
 
 type MemoryCard={key:string;treasure:HeritageTreasure};
 function makeDeck(count:number){return shuffled(shuffled(HERITAGE_TREASURES).slice(0,count).flatMap(treasure=>[{key:`${treasure.id}-a`,treasure},{key:`${treasure.id}-b`,treasure}]))}
+function makeDifferentDeck(count:number,current:MemoryCard[]){
+  const currentOrder=current.map(card=>card.key).join('|');
+  let next=makeDeck(count);
+  if(next.map(card=>card.key).join('|')===currentOrder&&next.length>1) next=[...next.slice(1),next[0]];
+  return next;
+}
 function MemoryGame({count,soundOn,onBack,onComplete,onNext}:{count:number;soundOn:boolean;onBack:()=>void;onComplete:()=>void;onNext:()=>void}){
   const [deck,setDeck]=useState<MemoryCard[]>(()=>makeDeck(count));
   const [open,setOpen]=useState<string[]>([]);
@@ -47,17 +53,17 @@ function MemoryGame({count,soundOn,onBack,onComplete,onNext}:{count:number;sound
   useEffect(()=>{if(complete)onComplete()},[complete,onComplete]);
   const choose=(card:MemoryCard)=>{if(locked||hinting||open.includes(card.key)||matched.includes(card.treasure.id))return;const next=[...open,card.key];setOpen(next);if(next.length<2)return;setLocked(true);const first=deck.find(value=>value.key===next[0])!;if(first.treasure.id===card.treasure.id){window.setTimeout(()=>{setMatched(value=>[...value,card.treasure.id]);setOpen([]);setLocked(false);setMessage(`같은 문화재를 찾았어요! ${card.treasure.name}! ${card.treasure.desc}`);speakKorean(`같은 문화재를 찾았어요! ${card.treasure.name}! ${card.treasure.desc}`,soundOn)},450)}else{setMessage('두 모습을 천천히 비교해 보세요.');window.setTimeout(()=>{setOpen([]);setLocked(false)},1500)}};
   const hint=()=>{if(locked||hinting)return;setHinting(true);setLocked(true);setMessage('모든 문화재의 자리를 2초 동안 살펴봐요.');window.setTimeout(()=>{setHinting(false);setLocked(false)},2000)};
-  const restart=()=>{setDeck(makeDeck(count));setOpen([]);setMatched([]);setLocked(false);setHinting(false);setMessage('카드의 자리가 새롭게 섞였어요!')};
-  return <section className="expedition-activity memory-activity"><div className="expedition-heading"><Button variant="outline" onClick={onBack}>← 이전</Button><div><h2>문화재 메모리게임</h2><p>{count===4?'쉬움 · 4종 8장':'도전 · 6종 12장'}</p></div><strong>{matched.length} / {count} 짝</strong></div><div className={`memory-grid cards-${count*2}`}>{deck.map(card=>{const visible=hinting||open.includes(card.key)||matched.includes(card.treasure.id);return <button key={card.key} className={`memory-card ${visible?'open':''} ${matched.includes(card.treasure.id)?'matched':''}`} disabled={locked&&!open.includes(card.key)} onClick={()=>choose(card)} aria-label={visible?card.treasure.name:'뒤집힌 문화재 카드'}><span className="memory-inner"><span className="memory-back"><i/><b>문화재</b></span><span className="memory-front"><img src={card.treasure.image} alt={visible?card.treasure.name:''}/></span></span></button>})}</div><div className="memory-actions"><Button onClick={hint} disabled={locked}>힌트 보기</Button><Button variant="outline" onClick={restart}>다시 하기</Button></div><div className="heritage-feedback" aria-live="polite">{message}</div>{complete&&<div className="activity-complete"><h2>문화재의 모습을 기억해 짝을 모두 찾았어요!</h2><Button onClick={onNext}>활동 선택으로</Button></div>}</section>;
+  const restart=()=>{setDeck(current=>makeDifferentDeck(count,current));setOpen([]);setMatched([]);setLocked(false);setHinting(false);setMessage('카드의 자리가 새롭게 섞였어요!')};
+  return <section className="expedition-activity memory-activity"><div className="expedition-heading"><Button variant="outline" onClick={onBack}>← 이전</Button><div><h2>문화재 메모리게임</h2><p>{count===6?'쉬움 · 6종 12장':'도전 · 8종 16장'}</p></div><strong>{matched.length} / {count} 짝</strong></div><div className={`memory-grid cards-${count*2}`}>{deck.map(card=>{const visible=hinting||open.includes(card.key)||matched.includes(card.treasure.id);return <button key={card.key} className={`memory-card ${visible?'open':''} ${matched.includes(card.treasure.id)?'matched':''}`} disabled={locked&&!open.includes(card.key)} onClick={()=>choose(card)} aria-label={visible?card.treasure.name:'뒤집힌 문화재 카드'}><span className="memory-inner"><span className="memory-back"><i/><b>문화재</b></span><span className="memory-front"><img src={card.treasure.image} alt={visible?card.treasure.name:''}/></span></span></button>})}</div><div className="memory-actions"><Button onClick={hint} disabled={locked}>힌트 보기</Button><Button variant="outline" onClick={restart}>다시 하기</Button></div><div className="heritage-feedback" aria-live="polite">{message}</div>{complete&&<div className="activity-complete"><h2>문화재의 모습을 기억해 짝을 모두 찾았어요!</h2><Button onClick={onNext}>활동 선택으로</Button></div>}</section>;
 }
 
 function MemorySelect({onBack,start}:{onBack:()=>void;start:(count:number)=>void}){
-  return <section className="expedition-activity"><div className="expedition-heading"><Button variant="outline" onClick={onBack}>← 이전</Button><div><h2>문화재 메모리게임</h2><p>카드 수를 골라요.</p></div></div><div className="memory-levels"><button onClick={()=>start(4)}><img src="/heritage-items/cheomseongdae.png" alt=""/><strong>쉬움</strong><b>4종 · 8장</b><small>2행 × 4열</small></button><button onClick={()=>start(6)}><img src="/heritage-items/seokgatap.png" alt=""/><strong>도전</strong><b>6종 · 12장</b><small>3행 × 4열</small></button></div></section>;
+  return <section className="expedition-activity"><div className="expedition-heading"><Button variant="outline" onClick={onBack}>← 이전</Button><div><h2>문화재 메모리게임</h2><p>카드 수를 골라요.</p></div></div><div className="memory-levels"><button onClick={()=>start(6)}><img src="/heritage-items/cheomseongdae.png" alt=""/><strong>쉬움</strong><b>6종 · 12장</b><small>3행 × 4열</small></button><button onClick={()=>start(8)}><img src="/heritage-items/seokgatap.png" alt=""/><strong>도전</strong><b>8종 · 16장</b><small>4행 × 4열</small></button></div></section>;
 }
 
 export default function HeritageExpedition({home,soundOn,toggleSound}:Props){
   const [activity,setActivity]=useState<Activity>('menu');
-  const [memoryCount,setMemoryCount]=useState(4);
+  const [memoryCount,setMemoryCount]=useState(6);
   const [completed,setCompleted]=useState<Set<string>>(()=>new Set());
   const complete=(id:string)=>setCompleted(value=>{if(value.has(id))return value;const next=new Set(value);next.add(id);return next});
   const back=()=>{stopKoreanSpeech();setActivity('menu')};
