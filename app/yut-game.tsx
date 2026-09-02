@@ -1,5 +1,5 @@
 'use client';
-import {useMemo,useRef,useState} from 'react';
+import {useMemo,useRef,useState,type CSSProperties} from 'react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {FINISHED,WAITING,initialPieces,makeYutThrow,moveTarget,possibleRoutes,resolveMove,type Face,type Piece,type ResultName,type Route,type Team,type ThrowResult} from './yut-logic';
@@ -11,6 +11,12 @@ const asset='/yut-assets/';
 const resultNames:ResultName[]=['도','개','걸','윷','모','백도'];
 const icon:Record<ResultName,string>={도:'do_icon.png',개:'gae_icon.png',걸:'geol_icon.png',윷:'yut_icon.png',모:'mo_icon.png',백도:'backdo_icon.png'};
 const countWords=['','하나','둘','셋','넷','다섯'];
+const stickScatters=[
+ [{x:27,y:33,r:-24},{x:44,y:67,r:12},{x:65,y:38,r:25},{x:76,y:69,r:-13}],
+ [{x:23,y:64,r:20},{x:43,y:31,r:-15},{x:63,y:66,r:31},{x:79,y:39,r:-27}],
+ [{x:28,y:29,r:-31},{x:38,y:70,r:16},{x:62,y:45,r:-6},{x:79,y:70,r:29}],
+ [{x:22,y:42,r:9},{x:45,y:65,r:-29},{x:66,y:29,r:18},{x:79,y:59,r:-8}],
+] as const;
 const raw=[[1040,1040],[1040,868],[1040,696],[1040,524],[1040,352],[1040,180],[868,180],[696,180],[524,180],[352,180],[180,180],[180,352],[180,524],[180,696],[180,868],[180,1040],[352,1040],[524,1040],[696,1040],[868,1040],[352,352],[481,481],[739,481],[868,352],[610,610],[352,868],[481,739],[739,739],[868,868]];
 const nodes=raw.map(([x,y],id)=>({id,x:x/1254*100,y:y/1254*100}));
 const nodeMap=new Map(nodes.map(n=>[n.id,n]));
@@ -20,7 +26,13 @@ function pawnSrc(team:Team,count:number){return`${asset}${team}_${count>1?'mal_s
 function Pawn({team,count=1,selectable=false,onClick}:{team:Team;count?:number;selectable?:boolean;onClick?:()=>void}){return <button type="button" className={`png-pawn ${team} ${selectable?'selectable':''}`} onClick={onClick} disabled={!selectable} aria-label={`${team==='red'?'빨강':'파랑'}팀 말 ${count}개`}><img src={pawnSrc(team,count)} alt=""/>{count>1&&<b>2</b>}</button>}
 function ResultIcon({name}:{name:ResultName}){return <img className="result-png" src={`${asset}icons/${icon[name]}`} alt=""/>}
 
-function YutSticks({faces,rolling,onThrow,disabled}:{faces:Face[];rolling:boolean;onThrow:()=>void;disabled:boolean}){const start=useRef<number|null>(null);return <section className="png-throw-zone"><div className="throw-mat"><img className="mat-png" src={`${asset}yut_throw_mat.png`} alt="전통 윷 던지기 놀이판"/><div className={`png-sticks ${rolling?'rolling':''}`} onPointerDown={e=>{start.current=e.clientY;e.currentTarget.setPointerCapture(e.pointerId)}} onPointerUp={e=>{if(start.current!==null&&start.current-e.clientY>35&&!disabled)onThrow();start.current=null}}>{faces.map((face,i)=><img key={i} src={`${asset}yut_${face}.png`} alt={face==='round'?'둥근 면':face==='backdo'?'백도 표시 면':'평평한 면'}/>)}</div></div><Button className="png-throw-button" onClick={onThrow} disabled={disabled}>{rolling?'윷이 날아가요':'윷 던지기'}</Button><small>버튼을 누르거나 윷가락을 위로 밀어요</small></section>}
+function YutSticks({faces,rolling,onThrow,disabled}:{faces:Face[];rolling:boolean;onThrow:()=>void;disabled:boolean}){
+ const start=useRef<number|null>(null);
+ const[scatter,setScatter]=useState(0);
+ const throwNow=()=>{if(disabled)return;setScatter(v=>(v+1)%stickScatters.length);onThrow()};
+ const layout=stickScatters[scatter];
+ return <section className="png-throw-zone"><div className="throw-mat"><img className="mat-png" src={`${asset}yut_throw_mat.png`} alt="전통 윷 던지기 놀이판"/><div className={`png-sticks ${rolling?'rolling':''}`} onPointerDown={e=>{start.current=e.clientY;e.currentTarget.setPointerCapture(e.pointerId)}} onPointerUp={e=>{if(start.current!==null&&start.current-e.clientY>35)throwNow();start.current=null}}>{faces.map((face,i)=>{const spot=layout[i];const style={'--stick-x':`${spot.x}%`,'--stick-y':`${spot.y}%`,'--stick-r':`${spot.r}deg`,'--stick-delay':`${i*.05}s`} as CSSProperties;return <span key={i} style={style}><img src={`${asset}yut_${face}.png`} alt={face==='round'?'둥근 면':face==='backdo'?'백도 표시 면':'평평한 면'}/></span>})}</div></div><Button className="png-throw-button" onClick={throwNow} disabled={disabled}>{rolling?'윷이 날아가요':'윷 던지기'}</Button><small>버튼을 누르거나 윷가락을 위로 밀어요</small></section>
+}
 
 type Target={display:number;actual:number;route:Route};
 function Board({pieces,selectable=[],targets=[],onPiece,onTarget}:{pieces:Piece[];selectable:string[];targets:Target[];onPiece:(id:string)=>void;onTarget:(t:Target)=>void}){const grouped=useMemo(()=>{const m=new Map<string,Piece[]>();pieces.filter(p=>p.position>=0).forEach(p=>{const k=`${p.team}-${p.position}`;m.set(k,[...(m.get(k)||[]),p])});return[...m.values()]},[pieces]);return <div className="traditional-board" aria-label="정사각형 29밭 전통 윷판"><img className="board-png" src={`${asset}traditional_yut_board.png`} alt="외곽 20밭과 X자 지름길이 있는 전통 윷판"/>{nodes.map(n=>{const options=targets.filter(t=>t.display===n.id);return <button key={n.id} className={`board-touch ${options.length?'target':''} ${n.id===0?'home':''}`} style={{left:`${n.x}%`,top:`${n.y}%`}} disabled={!options.length} onClick={()=>options[0]&&onTarget(options[0])} aria-label={n.id===0?'출발과 도착':`${n.id}번 밭`}>{n.id===0&&<span>출발·도착</span>}</button>})}{grouped.map(group=>{const p=group[0],n=nodeMap.get(p.position)!;const can=group.some(x=>selectable.includes(x.id));return <div key={`${p.team}-${p.position}`} className="pawn-anchor" style={{left:`${n.x}%`,top:`${n.y}%`}}><Pawn team={p.team} count={group.length} selectable={can} onClick={()=>onPiece(group.find(x=>selectable.includes(x.id))?.id||p.id)}/></div>})}</div>}
