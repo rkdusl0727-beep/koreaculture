@@ -25,7 +25,7 @@ const menus = [
   {id:'hanbok' as Screen,number:'02',title:'알록달록 한복 디자인실',hint:'입혀 보고 한복 이름도 배워요',ui:4,color:'blue',sheet:'explore' as SpriteSheet,art:1,image:''},
   {id:'yut' as Screen,number:'03',title:'함께하는 윷놀이',hint:'윷을 던지고 말을 움직여요',ui:0,color:'green',sheet:'explore' as SpriteSheet,art:0,image:'/yut-assets/traditional_yut_board.png'},
   {id:'objects' as Screen,number:'04',title:'옛날 물건 추리소',hint:'일부분을 보고 알아맞혀요',ui:6,color:'yellow',sheet:'tools' as SpriteSheet,art:0,image:''},
-  {id:'detective' as Screen,number:'05',title:'문화재 탐험대',hint:'찾고 기억하고 이름도 맞혀요',ui:6,color:'purple',sheet:'explore' as SpriteSheet,art:0,image:'/heritage-items/sungnyemun.png'},
+  {id:'detective' as Screen,number:'05',title:'문화재 탐험대',hint:'숨은 문화재를 찾고 짝을 맞춰요',ui:6,color:'purple',sheet:'explore' as SpriteSheet,art:0,image:'/heritage-items/sungnyemun.png'},
 ];
 
 function tone(kind: 'ui' | 'success', soundOn: boolean, at = 0) {
