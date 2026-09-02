@@ -7,4 +7,12 @@
 @media(max-width:1050px){.hb-design{height:auto;grid-template-columns:1fr 1fr}.hb-stage-panel{grid-row:1/3;grid-column:2}.hb-tools{grid-column:1}.hb-garments{max-height:420px}.hb-pair{grid-template-columns:1fr 1fr}.hb-coat-card{grid-column:1/-1;min-height:180px}.hb-coat-card img{height:130px}.hb-label-cards{grid-template-columns:repeat(5,1fr)}}
 @media(max-width:720px){.hb-header{height:auto;grid-template-columns:1fr 1fr}.hb-header h1{grid-column:1/3;grid-row:1}.hb-home{padding:18px}.hb-home h2{font-size:38px}.hb-home nav{grid-template-columns:1fr}.hb-home nav button{min-height:280px}.hb-home nav img{height:170px}.hb-design{display:flex;flex-direction:column;height:auto}.hb-stage-panel{order:-1}.hb-drop-stage{min-height:530px}.hb-character{height:520px}.hb-names>nav{grid-template-columns:1fr}.hb-pair,.hb-label-pair{grid-template-columns:1fr 1fr}.hb-pair .hb-character{height:470px}.hb-word-options{grid-template-columns:1fr}.hb-label-cards{grid-template-columns:repeat(3,1fr)}.hb-fixed-name{font-size:12px;min-width:52px}.label-top,.label-socks{left:-5%}.label-bottom,.label-shoes,.label-ornament{right:-5%}}
 @media(max-width:480px){.hb-pair .hb-character,.hb-label-pair .hb-character{height:390px}.hb-pair{gap:4px}.hb-one-garment{height:330px}.hb-label-cards{grid-template-columns:repeat(2,1fr)}}
+
+/* Keep complete garment cutouts visible and aligned to the shared child coordinate system. */
+.hb-layer img{object-position:center}
+.slot-coat{left:1%;top:21%;width:98%;height:69%}
+.slot-coat img{object-fit:fill;object-position:center top}
+.slot-coat .hb-tint,.slot-coat .hb-pattern{-webkit-mask-position:center top!important;mask-position:center top!important;-webkit-mask-size:100% 100%!important;mask-size:100% 100%!important}
+.hb-one-garment{padding:24px;overflow:hidden}
+.hb-one-garment img{display:block;object-position:center}
 @media(prefers-reduced-motion:reduce){.hb-app *{transition:none!important;animation:none!important}}

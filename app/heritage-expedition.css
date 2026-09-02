@@ -19,3 +19,12 @@
 .heritage-strip article{overflow:hidden;isolation:isolate}.heritage-strip img{display:block;max-width:78%}.heritage-strip span{z-index:2}
 .expedition-cards{width:min(1050px,94%);margin-left:auto;margin-right:auto;grid-template-columns:repeat(2,1fr)}
 @media(max-width:760px){.expedition-cards{grid-template-columns:1fr}}
+
+/* Clear, grounded heritage art without overlapping highlight rings. */
+.hidden-target.found{filter:saturate(1) brightness(1.04) drop-shadow(0 0 7px white)}
+.hidden-target.focused::after{border-color:white;box-shadow:0 0 18px white}
+.hidden-target span{right:-2px;top:-2px;width:24px;height:24px;font-size:.9rem;box-shadow:0 0 0 3px white}
+.hidden-goryeo-celadon img,.hidden-joseon-white-porcelain img{object-position:center bottom}
+.memory-front{border-color:#d8d0c2;box-shadow:0 7px 0 #bbb2a4}
+.memory-front img{width:82%;height:82%;object-fit:contain;object-position:center bottom}
+.heritage-strip img{object-position:center bottom}

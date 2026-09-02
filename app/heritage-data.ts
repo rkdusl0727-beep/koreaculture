@@ -10,17 +10,17 @@ export type HeritageTreasure={
 
 // 세 활동은 이 목록 하나만 함께 사용합니다. 기존 명칭·설명·이미지 경로를 유지합니다.
 export const HERITAGE_TREASURES:HeritageTreasure[]=[
-  {id:'sungnyemun',name:'숭례문',art:'sungnyemun',image:'/heritage-items/sungnyemun.png',desc:'서울을 드나들던 큰 성문이에요.',size:11,positions:[{x:59,y:31},{x:61,y:30},{x:57,y:32}]},
-  {id:'cheomseongdae',name:'첨성대',art:'cheomseongdae',image:'/heritage-items/cheomseongdae.png',desc:'옛날 사람들이 하늘과 별을 살펴보던 곳이에요.',size:6.5,positions:[{x:74,y:25},{x:76,y:24},{x:72,y:26}]},
-  {id:'dabotap',name:'다보탑',art:'dabotap',image:'/heritage-items/dabotap.png',desc:'돌을 정교하게 쌓아 만든 아름다운 탑이에요.',size:7,positions:[{x:88,y:29},{x:90,y:30},{x:87,y:27}]},
+  {id:'sungnyemun',name:'숭례문',art:'sungnyemun',image:'/heritage-items/sungnyemun-front.png',desc:'서울을 드나들던 큰 성문이에요.',size:11,positions:[{x:59,y:31},{x:61,y:30},{x:57,y:32},{x:55,y:30}]},
+  {id:'cheomseongdae',name:'첨성대',art:'cheomseongdae',image:'/heritage-items/cheomseongdae.png',desc:'옛날 사람들이 하늘과 별을 살펴보던 곳이에요.',size:6.5,positions:[{x:74,y:25},{x:76,y:23},{x:71,y:27},{x:79,y:25}]},
+  {id:'dabotap',name:'다보탑',art:'dabotap',image:'/heritage-items/dabotap.png',desc:'돌을 정교하게 쌓아 만든 아름다운 탑이에요.',size:7,positions:[{x:46,y:31},{x:50,y:34},{x:67,y:32},{x:72,y:34}]},
   {id:'geunjeongjeon',name:'경복궁 근정전',art:'geunjeongjeon',image:'/heritage-items/geunjeongjeon.png',desc:'조선 시대 왕이 중요한 일을 하던 궁궐 건물이에요.',size:12,positions:[{x:27,y:16},{x:25,y:15},{x:29,y:17}]},
   {id:'seokguram',name:'석굴암',art:'seokguram',image:'/heritage-items/seokguram.png',desc:'돌로 만든 방 안에 부처님상이 있는 문화재예요.',size:9,positions:[{x:8,y:15},{x:10,y:14},{x:12,y:16}]},
   {id:'silla-crown',name:'신라 금관',art:'silla-crown',image:'/heritage-items/silla-crown.png',desc:'신라 왕과 왕족이 머리에 쓰던 반짝이는 금관이에요.',size:6,positions:[{x:49,y:40},{x:47,y:39},{x:46,y:38}]},
   {id:'turtle-ship',name:'거북선',art:'turtle-ship',image:'/heritage-items/turtle-ship.png',desc:'단단한 지붕을 얹어 바다를 지키던 배예요.',size:9,positions:[{x:72,y:47},{x:69,y:46},{x:75,y:46}]},
   {id:'traditional-mask',name:'전통 탈',art:'traditional-mask',image:'/heritage-items/traditional-mask.png',desc:'얼굴에 쓰고 춤과 이야기를 보여 주던 탈이에요.',size:5.5,positions:[{x:29,y:48},{x:31,y:47},{x:27,y:49}]},
-  {id:'goryeo-celadon',name:'고려청자',art:'goryeo-celadon',image:'/heritage-items/goryeo-celadon.png',desc:'푸른 옥빛이 아름다운 고려 시대 그릇이에요.',size:5,positions:[{x:30,y:78},{x:32,y:79},{x:28,y:80}]},
-  {id:'joseon-white-porcelain',name:'조선백자',art:'joseon-white-porcelain',image:'/heritage-items/joseon-white-porcelain.png',desc:'깨끗한 흰빛과 둥근 모양이 아름다운 그릇이에요.',size:5,positions:[{x:61,y:83},{x:64,y:84},{x:58,y:84}]},
-  {id:'seokgatap',name:'석가탑',art:'seokgatap',image:'/heritage-items/seokgatap.png',desc:'단정하게 쌓은 세 층의 돌탑이에요.',size:6.5,positions:[{x:94,y:17},{x:93,y:15},{x:95,y:19}]},
+  {id:'goryeo-celadon',name:'고려청자',art:'goryeo-celadon',image:'/heritage-items/goryeo-celadon.png',desc:'푸른 옥빛이 아름다운 고려 시대 그릇이에요.',size:5,positions:[{x:29,y:88},{x:33,y:87},{x:27,y:91},{x:36,y:89}]},
+  {id:'joseon-white-porcelain',name:'조선백자',art:'joseon-white-porcelain',image:'/heritage-items/joseon-white-porcelain.png',desc:'깨끗한 흰빛과 둥근 모양이 아름다운 그릇이에요.',size:5,positions:[{x:60,y:89},{x:64,y:91},{x:57,y:92},{x:68,y:88}]},
+  {id:'seokgatap',name:'석가탑',art:'seokgatap',image:'/heritage-items/seokgatap.png',desc:'단정하게 쌓은 세 층의 돌탑이에요.',size:6.5,positions:[{x:39,y:34},{x:43,y:31},{x:64,y:35},{x:70,y:31}]},
   {id:'cheonmachong',name:'천마총 무덤',art:'cheonmachong',image:'/heritage-items/cheonmachong.png',desc:'신라의 왕과 왕족을 모신 둥근 무덤이에요.',size:9,positions:[{x:83,y:9},{x:86,y:10},{x:80,y:10}]},
 ];
 
