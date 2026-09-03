@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import YutGame from './yut-game';
 import HanbokStudio from './hanbok-studio';
 import HeritageExpedition from './heritage-expedition';
+import HomeIconButton from './home-icon-button';
 import {prepareKoreanVoice,speakKorean,stopKoreanSpeech} from './korean-speech';
 
 type Screen = 'home' | 'map' | 'hanbok' | 'yut' | 'objects' | 'detective';
@@ -48,7 +49,7 @@ const speak=speakKorean;
 function Confetti() { return <div className="confetti" aria-hidden="true">{Array.from({length:24},(_,i)=><i key={i} style={{'--i':i} as React.CSSProperties} />)}</div>; }
 
 function TopBar({title,onHome,soundOn,onSound}:{title:string;onHome:()=>void;soundOn:boolean;onSound:()=>void}) {
-  return <header className="topbar"><Button onClick={onHome} variant="outline" className="round-action"><PngIcon sheet="ui" index={0}/> <span>처음으로</span></Button><div className="activity-title"><PngIcon sheet="ui" index={4}/><h1>{title}</h1><PngIcon sheet="ui" index={4}/></div><Button onClick={onSound} variant="outline" className="round-action sound-only" aria-label={soundOn?'소리 끄기':'소리 켜기'}><PngIcon sheet="ui" index={soundOn?1:2}/><span>{soundOn?'소리 켬':'소리 끔'}</span></Button></header>;
+  return <header className="topbar"><HomeIconButton onClick={onHome}/><div className="activity-title"><PngIcon sheet="ui" index={4}/><h1>{title}</h1><PngIcon sheet="ui" index={4}/></div><Button onClick={onSound} variant="outline" className="round-action sound-only" aria-label={soundOn?'소리 끄기':'소리 켜기'}><PngIcon sheet="ui" index={soundOn?1:2}/><span>{soundOn?'소리 켬':'소리 끔'}</span></Button></header>;
 }
 
 function HomeScreen({go,soundOn,toggleSound}:{go:(s:Screen)=>void;soundOn:boolean;toggleSound:()=>void}) {

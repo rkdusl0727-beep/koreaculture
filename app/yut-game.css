@@ -8,3 +8,4 @@
 @media(prefers-reduced-motion:reduce){.png-yut-app *{animation:none!important;transition:none!important}}
 .board-touch.target{z-index:12}
 .route-choice-label{position:absolute;left:50%;bottom:105%;transform:translateX(-50%);min-width:64px;padding:5px 8px;border:3px solid #202936;border-radius:12px;background:white;color:#202936;font-size:13px;font-weight:900;white-space:nowrap;box-shadow:0 4px 0 #f2bd37}
+.pawn-anchor.red{margin-left:-2.1%}.pawn-anchor.blue{margin-left:2.1%}
