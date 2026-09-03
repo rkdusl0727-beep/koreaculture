@@ -100,5 +100,22 @@
 .hb-name-explore .label-socks{left:-12%;top:87%}
 .hb-name-explore .label-socks:after{width:46px}
 
-/* Accessory choices replace the old selectable-pattern controls. */
+/* Four fitted hair accessories replace the old norigae and color controls. */
 .hb-accessory-guide{font-size:15px!important;min-height:0!important;margin:0 0 8px}.hb-accessories{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.hb-accessories button{min-height:128px;padding:6px;border:3px solid #202936;border-radius:16px;background:#fffaf0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900}.hb-accessories button.active{background:#e6f1fb;box-shadow:inset 0 0 0 3px #2878b8}.hb-accessories img{display:block;width:100%;height:88px;object-fit:contain}
+
+/* Hair accessories sit above the unchanged child and clothing layers. */
+.slot-hair{z-index:9}
+.slot-hair.garment-hairband-1,.slot-hair.garment-hairband-2{left:16%;top:3.5%;width:68%;height:21%}
+.slot-hair.garment-hairpin-1,.slot-hair.garment-hairpin-2{left:51%;top:5%;width:31%;height:18%}
+.slot-hair img{object-fit:contain!important;filter:none!important}
+.slot-hair .hb-tint{display:none}
+
+/* Normalize the six differently cropped jeogori files to one child-body anchor. */
+.slot-top[class*="garment-jeogori-"] img{object-fit:fill!important}
+.slot-top[class*="garment-jeogori-"] .hb-tint{-webkit-mask-size:100% 100%!important;mask-size:100% 100%!important}
+.slot-top.garment-jeogori-1{left:-6.1%;top:24%;width:107%;height:39.5%}
+.slot-top.garment-jeogori-2{left:-3.6%;top:18.5%;width:104.4%;height:44.3%}
+.slot-top.garment-jeogori-3{left:-2%;top:21%;width:103.2%;height:43.5%}
+.slot-top.garment-jeogori-4{left:-1.2%;top:16.6%;width:104.4%;height:47.5%}
+.slot-top.garment-jeogori-5{left:-1%;top:17.3%;width:103.1%;height:48.4%}
+.slot-top.garment-jeogori-6{left:-5.2%;top:20.6%;width:106.1%;height:43.5%}

@@ -12,9 +12,11 @@ type Props={home:()=>void;soundOn:boolean;toggleSound:()=>void};
 type Mode='start'|'design'|'names';
 type NameMode='explore'|'cards'|'labels';
 type GarmentName='저고리'|'치마'|'바지'|'두루마기'|'버선'|'꽃신'|'노리개';
+type HairAccessoryName='한복용 머리띠'|'한복용 머리핀';
+type WearableName=GarmentName|HairAccessoryName;
 type LearningName=GarmentName|'고름';
-type Slot='socks'|'bottom'|'top'|'coat'|'shoes'|'ornament'|'tie';
-type Garment={id:string;name:GarmentName;slot:Slot;img:string;color:string;variant:string};
+type Slot='socks'|'bottom'|'top'|'coat'|'shoes'|'ornament'|'hair'|'tie';
+type Garment={id:string;name:WearableName;slot:Slot;img:string;color:string;variant:string};
 type Worn={garment:Garment;color:string};
 type Outfit=Partial<Record<Slot,Worn>>;
 
@@ -22,18 +24,23 @@ const root='/hanbok-studio/garments/';
 const names:GarmentName[]=['저고리','치마','바지','두루마기','버선','꽃신','노리개'];
 const messages:Record<LearningName,string>={저고리:'저고리예요.',치마:'치마예요.',바지:'바지예요.',두루마기:'두루마기예요.',버선:'버선이에요.',꽃신:'꽃신이에요.',노리개:'노리개예요.',고름:'고름이에요.'};
 const hints:Record<LearningName,string>={저고리:'몸의 위쪽에 입는 옷이에요.',치마:'아래로 넓게 펼쳐진 옷이에요.',바지:'두 다리를 넣어 입는 옷이에요.',두루마기:'한복 위에 입는 긴 옷이에요.',버선:'버선은 두 발에 신는 흰색 옷이에요.',꽃신:'버선 위에 신어요.',노리개:'한복에 다는 장식이에요.',고름:'저고리 앞에서 길게 묶는 끈이에요.'};
-const categories:GarmentName[]=names;
-const colors=[['빨강','#e7473c'],['분홍','#ed8eaa'],['노랑','#f2bd37'],['초록','#318b61'],['파랑','#3789c4'],['남색','#34527d'],['보라','#78569d'],['흰색','#fffaf0'],['연두','#91c86c'],['하늘색','#91cbe4']];
-const slotOrder:Slot[]=['socks','bottom','top','coat','shoes','ornament'];
+const categories:GarmentName[]=names.filter(name=>name!=='노리개');
+const slotOrder:Slot[]=['socks','bottom','top','coat','shoes','ornament','hair'];
 const make=(name:GarmentName,count:number,slot:Slot,file:string,palette:string[],available=99)=>Array.from({length:count},(_,index):Garment=>({id:`${file}-${index+1}`,name,slot,img:`${root}${file}-${index%available+1}.png`,color:palette[index%palette.length],variant:`${name} ${index+1}`}));
 const garments:Garment[]=[
-  ...make('저고리',6,'top','jeogori',['#e7473c','#ed8eaa','#f2bd37','#318b61','#3789c4','#78569d'],6).map((garment,index)=>index===2?{...garment,img:`${root}jeogori-boy-v1.png`,variant:'남자 저고리'}:garment),
+  ...make('저고리',6,'top','jeogori',['#e7473c','#ed8eaa','#f2bd37','#318b61','#3789c4','#78569d'],6),
   ...make('치마',6,'bottom','chima',['#e7473c','#ed8eaa','#f2bd37','#318b61','#3789c4','#78569d'],5),
   ...make('바지',5,'bottom','baji',['#34527d','#d9c39f','#91c86c','#78569d','#91cbe4'],5),
   ...make('두루마기',3,'coat','durumagi',['#496aa3','#c9b68d','#c98286'],3).map((garment,index)=>({...garment,img:`${root}durumagi-new-${index+1}.png`})),
   ...make('버선',3,'socks','beoseon',['#fffaf0','#e9e6dc','#f5e6cf'],2).map(garment=>({...garment,img:`${root}beoseon-authentic.png`})),
   ...make('꽃신',4,'shoes','flower-shoes',['#d83f44','#315f8b','#ed8eaa','#78569d'],2).map((garment,index)=>({...garment,img:`${root}flower-shoes-${index%2+1}-aligned.png`})),
   ...Array.from({length:4},(_,index):Garment=>({id:`norigae-${index+1}`,name:'노리개',slot:'ornament',img:`${root}norigae-${index+1}.png`,color:['#318b61','#e7473c','#3789c4','#78569d'][index],variant:`노리개 ${index+1}`})),
+];
+const hairAccessories:Garment[]=[
+  {id:'hairband-1',name:'한복용 머리띠',slot:'hair',img:`${root}hairband-1.png`,color:'#ed8eaa',variant:'한복용 머리띠 1'},
+  {id:'hairband-2',name:'한복용 머리띠',slot:'hair',img:`${root}hairband-2.png`,color:'#91cbe4',variant:'한복용 머리띠 2'},
+  {id:'hairpin-1',name:'한복용 머리핀',slot:'hair',img:`${root}hairpin-1.png`,color:'#e7473c',variant:'한복용 머리핀 1'},
+  {id:'hairpin-2',name:'한복용 머리핀',slot:'hair',img:`${root}hairpin-2.png`,color:'#91c86c',variant:'한복용 머리핀 2'},
 ];
 const boyJeogori:Garment={id:'jeogori-boy-v1',name:'저고리',slot:'top',img:`${root}jeogori-boy-v1.png`,color:'#d9c39f',variant:'남자 저고리'};
 const findGarment=(name:GarmentName,number=1)=>garments.find(value=>value.name===name&&value.id.endsWith(`-${number}`))||garments.find(value=>value.name===name)!;
@@ -51,17 +58,16 @@ function Character({kind,outfit,selected,onSelect,labels,side,clickZones=false,i
 
 function Design({soundOn,onNames,home}:{soundOn:boolean;onNames:()=>void;home:()=>void}){
   const [category,setCategory]=useState<GarmentName>('저고리');const [kind,setKind]=useState<0|1>(0);const [outfit,setOutfit]=useState<Outfit>({});const [selected,setSelected]=useState<Slot|null>(null);const [pending,setPending]=useState<Garment|null>(null);const [message,setMessage]=useState('옷을 끌어 캐릭터에게 입혀 보세요.');const [drag,setDrag]=useState<{garment:Garment;x:number;y:number}|null>(null);const [finished,setFinished]=useState(false);const stage=useRef<HTMLDivElement>(null);const start=useRef({x:0,y:0});const moved=useRef(false);
-  const accessories=garments.filter(value=>value.name==='노리개');
-  const equip=(garment:Garment)=>{setOutfit(value=>({...value,[garment.slot]:{garment,color:garment.color}}));setSelected(garment.slot);setPending(null);setMessage(garment.name==='꽃신'?'꽃신을 발에 꼭 맞게 신겼어요.':messages[garment.name]);speakKorean(messages[garment.name],soundOn)};
+  const itemMessage=(name:WearableName)=>name==='한복용 머리띠'?'한복용 머리띠를 머리에 썼어요.':name==='한복용 머리핀'?'한복용 머리핀을 머리에 꽂았어요.':messages[name];
+  const equip=(garment:Garment)=>{setOutfit(value=>({...value,[garment.slot]:{garment,color:garment.color}}));setSelected(garment.slot);setPending(null);const text=garment.name==='꽃신'?'꽃신을 발에 꼭 맞게 신겼어요.':itemMessage(garment.name);setMessage(text);speakKorean(text,soundOn)};
   const down=(garment:Garment,event:React.PointerEvent)=>{event.currentTarget.setPointerCapture(event.pointerId);start.current={x:event.clientX,y:event.clientY};moved.current=false;setDrag({garment,x:event.clientX,y:event.clientY-78});event.preventDefault()};
   const move=(event:React.PointerEvent)=>{if(!drag)return;if(Math.hypot(event.clientX-start.current.x,event.clientY-start.current.y)>4)moved.current=true;setDrag({...drag,x:event.clientX,y:event.clientY-78})};
   const overSocks=(clientX:number,clientY:number)=>{const character=stage.current?.querySelector<HTMLElement>('.hb-character');if(!character)return false;const rect=character.getBoundingClientRect();return clientX>=rect.left+rect.width*.18&&clientX<=rect.right-rect.width*.18&&clientY>=rect.top+rect.height*.76&&clientY<=rect.bottom+24};
   const up=(event:React.PointerEvent)=>{if(!drag)return;const rect=stage.current?.getBoundingClientRect();const overStage=!!rect&&event.clientX>=rect.left-72&&event.clientX<=rect.right+72&&event.clientY>=rect.top-72&&event.clientY<=rect.bottom+72;const validDrop=drag.garment.slot==='socks'?overSocks(event.clientX,event.clientY):overStage;if(moved.current&&validDrop)equip(drag.garment);else{setPending(drag.garment);const text=drag.garment.slot==='socks'?'버선을 아이의 흰 양말 부분에 놓아 보세요.':`${drag.garment.name} 선택! 캐릭터를 누르면 입어요.`;setMessage(text);speakKorean(drag.garment.slot==='socks'?text:messages[drag.garment.name],soundOn)}setDrag(null)};
-  const selectLayer=(slot:Slot)=>{if(pending)return;setSelected(slot);const worn=outfit[slot];if(worn){setMessage(messages[worn.garment.name]);speakKorean(messages[worn.garment.name],soundOn)}};
-  const change=(patch:Partial<Worn>)=>selected&&setOutfit(value=>value[selected]?({...value,[selected]:{...value[selected]!,...patch}}):value);
+  const selectLayer=(slot:Slot)=>{if(pending)return;setSelected(slot);const worn=outfit[slot];if(worn){const text=itemMessage(worn.garment.name);setMessage(text);speakKorean(text,soundOn)}};
   const finish=()=>{const worn=slotOrder.map(slot=>outfit[slot]?.garment.name).filter((value,index,array)=>value&&array.indexOf(value)===index) as string[];const ending=worn.length>1?`${worn.slice(0,-1).join(', ')}과 ${worn.at(-1)}`:worn[0];const text=`${ending}으로 한복을 완성했어요!`;setMessage(text);setFinished(true);speakKorean(text,soundOn)};
   const reset=()=>{setOutfit({});setSelected(null);setPending(null);setFinished(false);setMessage('새 한복을 입혀 보세요.')};
-  return <section className="hb-design" onPointerMove={move} onPointerUp={up} onPointerCancel={()=>setDrag(null)}><aside className="hb-closet"><h2>한복 옷장</h2><div className="hb-tabs">{categories.map(name=><button key={name} className={category===name?'active':''} onClick={()=>setCategory(name)}>{name}</button>)}</div><div className="hb-garments">{garments.filter(value=>value.name===category).map(garment=><button key={garment.id} className={pending?.id===garment.id?'selected':''} onPointerDown={event=>down(garment,event)}><img src={garment.img} alt=""/><b>{garment.variant}</b></button>)}</div></aside><section className="hb-stage-panel"><div className="hb-character-switch"><button className={kind===0?'active':''} onClick={()=>setKind(0)}>어린이 1</button><button className={kind===1?'active':''} onClick={()=>setKind(1)}>어린이 2</button></div><div ref={stage} className="hb-drop-stage" onClickCapture={()=>pending&&equip(pending)}><Character kind={kind} outfit={outfit} selected={selected} onSelect={selectLayer}/></div><p className="hb-message">{message}</p><div className="hb-stage-actions"><Button className="hb-finish" onClick={finish} disabled={!Object.keys(outfit).length}>완성하기</Button></div></section><aside className="hb-tools"><h2>색과 장신구</h2><p>{selected?outfit[selected]?.garment.name:'먼저 옷을 입혀요'}</p><div className="hb-colors">{colors.map(([name,color])=><button key={name} title={name} style={{background:color}} onClick={()=>change({color})}>{name}</button>)}</div><h3>장신구로 꾸미기</h3><p className="hb-accessory-guide">노리개를 누르면 바로 한복에 달려요.</p><div className="hb-accessories">{accessories.map(accessory=><button key={accessory.id} className={outfit.ornament?.garment.id===accessory.id?'active':''} onClick={()=>equip(accessory)}><img src={accessory.img} alt=""/><b>{accessory.variant}</b></button>)}</div></aside>{drag&&<div className="hb-drag-ghost" style={{left:drag.x,top:drag.y}}><img src={drag.garment.img} alt=""/></div>}{finished&&<div className="hb-complete-overlay"><div><h2>한복 완성!</h2><Character kind={kind} outfit={outfit}/><p>{message}</p><nav><Button onClick={reset}>다른 한복 만들기</Button><Button variant="outline" onClick={()=>setFinished(false)}>다시 입히기</Button><Button variant="outline" onClick={onNames}>한복 이름 맞히기</Button><HomeIconButton onClick={home}/></nav></div></div>}</section>;
+  return <section className="hb-design" onPointerMove={move} onPointerUp={up} onPointerCancel={()=>setDrag(null)}><aside className="hb-closet"><h2>한복 옷장</h2><div className="hb-tabs">{categories.map(name=><button key={name} className={category===name?'active':''} onClick={()=>setCategory(name)}>{name}</button>)}</div><div className="hb-garments">{garments.filter(value=>value.name===category).map(garment=><button key={garment.id} className={pending?.id===garment.id?'selected':''} onPointerDown={event=>down(garment,event)}><img src={garment.img} alt=""/><b>{garment.variant}</b></button>)}</div></aside><section className="hb-stage-panel"><div className="hb-character-switch"><button className={kind===0?'active':''} onClick={()=>setKind(0)}>어린이 1</button><button className={kind===1?'active':''} onClick={()=>setKind(1)}>어린이 2</button></div><div ref={stage} className="hb-drop-stage" onClickCapture={()=>pending&&equip(pending)}><Character kind={kind} outfit={outfit} selected={selected} onSelect={selectLayer}/></div><p className="hb-message">{message}</p><div className="hb-stage-actions"><Button className="hb-finish" onClick={finish} disabled={!Object.keys(outfit).length}>완성하기</Button></div></section><aside className="hb-tools"><h2>머리 장신구</h2><p>{outfit.hair?.garment.name||'머리띠나 머리핀을 골라요'}</p><p className="hb-accessory-guide">장신구를 누르면 아이의 머리에 꼭 맞게 착용돼요.</p><div className="hb-accessories">{hairAccessories.map(accessory=><button key={accessory.id} className={outfit.hair?.garment.id===accessory.id?'active':''} onClick={()=>equip(accessory)}><img src={accessory.img} alt=""/><b>{accessory.variant}</b></button>)}</div></aside>{drag&&<div className="hb-drag-ghost" style={{left:drag.x,top:drag.y}}><img src={drag.garment.img} alt=""/></div>}{finished&&<div className="hb-complete-overlay"><div><h2>한복 완성!</h2><Character kind={kind} outfit={outfit}/><p>{message}</p><nav><Button onClick={reset}>다른 한복 만들기</Button><Button variant="outline" onClick={()=>setFinished(false)}>다시 입히기</Button><Button variant="outline" onClick={onNames}>한복 이름 맞히기</Button><HomeIconButton onClick={home}/></nav></div></div>}</section>;
 }
 
 function ExploreNames({soundOn}:{soundOn:boolean}){
