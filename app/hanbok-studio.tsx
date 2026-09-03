@@ -2,7 +2,7 @@
 
 import {useEffect,useRef,useState} from 'react';
 import {Button} from '@/components/ui/button';
-import {speakKorean,stopKoreanSpeech} from './korean-speech';
+import {speakKorean,stopKoreanSpeech,useNormalAudioSpeed} from './korean-speech';
 import HomeIconButton from './home-icon-button';
 import SoundIconButton from './sound-icon-button';
 import {playDingDongDaeng} from './correct-sound';
@@ -68,7 +68,7 @@ function Design({soundOn,onNames,home}:{soundOn:boolean;onNames:()=>void;home:()
 function ExploreNames({soundOn}:{soundOn:boolean}){
   const [girlSelected,setGirlSelected]=useState<Slot|null>(null);const [boySelected,setBoySelected]=useState<Slot|null>(null);const [girlNamed,setGirlNamed]=useState<Slot[]>([]);const [boyNamed,setBoyNamed]=useState<Slot[]>([]);const [coatSelected,setCoatSelected]=useState(false);const audio=useRef<HTMLAudioElement|null>(null);
   useEffect(()=>()=>{audio.current?.pause();audio.current=null},[]);
-  const playName=(name:LearningName)=>{stopKoreanSpeech();audio.current?.pause();audio.current=null;if(!soundOn)return;const voice=new Audio(`/audio/hanbok/${nameAudio[name]}.wav`);audio.current=voice;void voice.play().catch(()=>speakKorean(messages[name],true))};
+  const playName=(name:LearningName)=>{stopKoreanSpeech();audio.current?.pause();audio.current=null;if(!soundOn)return;const voice=useNormalAudioSpeed(new Audio(`/audio/hanbok/${nameAudio[name]}.wav`));audio.current=voice;void voice.play().catch(()=>speakKorean(messages[name],true))};
   const choose=(name:LearningName,side:'girl'|'boy',slot:Slot)=>{if(side==='girl'){setGirlSelected(slot);setGirlNamed(value=>value.includes(slot)?value:[...value,slot])}else{setBoySelected(slot);setBoyNamed(value=>value.includes(slot)?value:[...value,slot])}setCoatSelected(false);playName(name)};
   const labelFor=(outfit:Outfit,named:Slot[])=>({...Object.fromEntries(Object.entries(outfit).filter(([slot])=>named.includes(slot as Slot)).map(([slot,worn])=>[slot,worn!.garment.name])),...(named.includes('tie')?{tie:'고름'}:{})});
   const detachedShoes=(side:'girl'|'boy',outfit:Outfit)=><button type="button" className="hb-detached-shoes" onClick={()=>choose('꽃신',side,'shoes')} aria-label={`${side==='girl'?'치마':'바지'} 한복 꽃신`}><img src={outfit.shoes!.garment.img} alt="꽃신"/>{(side==='girl'?girlNamed:boyNamed).includes('shoes')&&<b>꽃신</b>}</button>;
