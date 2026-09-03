@@ -5,7 +5,7 @@ let voiceTimer:number|undefined;
 let speakTimer:number|undefined;
 export const NORMAL_SPEECH_RATE=1;
 
-export function useNormalAudioSpeed(audio:HTMLAudioElement){
+export function setNormalAudioSpeed(audio:HTMLAudioElement){
   audio.defaultPlaybackRate=NORMAL_SPEECH_RATE;
   audio.playbackRate=NORMAL_SPEECH_RATE;
   return audio;
