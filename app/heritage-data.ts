@@ -18,10 +18,10 @@ export const HERITAGE_TREASURES:HeritageTreasure[]=[
   {id:'silla-crown',name:'신라 금관',art:'silla-crown',image:'/heritage-items/silla-crown.png',desc:'신라 왕과 왕족이 머리에 쓰던 반짝이는 금관이에요.',size:7,positions:[{x:26,y:48},{x:31,y:47},{x:35,y:46},{x:44,y:48}]},
   {id:'turtle-ship',name:'거북선',art:'turtle-ship',image:'/heritage-items/turtle-ship.png',desc:'단단한 지붕을 얹어 바다를 지키던 배예요.',size:9,positions:[{x:72,y:47},{x:69,y:46},{x:75,y:46}]},
   {id:'traditional-mask',name:'전통 탈',art:'traditional-mask',image:'/heritage-items/traditional-mask.png',desc:'얼굴에 쓰고 춤과 이야기를 보여 주던 탈이에요.',size:5.5,positions:[{x:18,y:43},{x:23,y:45},{x:38,y:45}]},
-  {id:'goryeo-celadon',name:'고려청자',art:'goryeo-celadon',image:'/heritage-items/goryeo-celadon-restored.png',desc:'푸른 옥빛이 아름다운 고려 시대 그릇이에요.',size:5,positions:[{x:29,y:88},{x:33,y:87},{x:27,y:91},{x:36,y:89}]},
-  {id:'joseon-white-porcelain',name:'조선백자',art:'joseon-white-porcelain',image:'/heritage-items/joseon-white-porcelain.png',desc:'깨끗한 흰빛과 둥근 모양이 아름다운 그릇이에요.',size:5,positions:[{x:60,y:89},{x:64,y:91},{x:57,y:92},{x:68,y:88}]},
+  {id:'goryeo-celadon',name:'고려청자',art:'goryeo-celadon',image:'/heritage-items/goryeo-celadon-restored.png',desc:'푸른 옥빛이 아름다운 고려 시대 그릇이에요.',size:5,positions:[{x:18,y:95},{x:23,y:94},{x:29,y:95},{x:34,y:93}]},
+  {id:'joseon-white-porcelain',name:'조선백자',art:'joseon-white-porcelain',image:'/heritage-items/joseon-white-porcelain.png',desc:'깨끗한 흰빛과 둥근 모양이 아름다운 그릇이에요.',size:5,positions:[{x:68,y:95},{x:73,y:94},{x:79,y:95},{x:84,y:93}]},
   {id:'seokgatap',name:'석가탑',art:'seokgatap',image:'/heritage-items/seokgatap.png',desc:'단정하게 쌓은 세 층의 돌탑이에요.',size:7.5,positions:[{x:39,y:36},{x:43,y:35},{x:64,y:37},{x:70,y:36}]},
-  {id:'cheonmachong',name:'천마총 무덤',art:'cheonmachong',image:'/heritage-items/cheonmachong.png',desc:'신라의 왕과 왕족을 모신 둥근 무덤이에요.',size:9,positions:[{x:83,y:9},{x:86,y:10},{x:80,y:10}]},
+  {id:'cheonmachong',name:'천마총 무덤',art:'cheonmachong',image:'/heritage-items/cheonmachong.png',desc:'신라의 왕과 왕족을 모신 둥근 무덤이에요.',size:9,positions:[{x:84,y:31},{x:88,y:32},{x:92,y:31}]},
 ];
 
 export const HERITAGE_CLUES=[
