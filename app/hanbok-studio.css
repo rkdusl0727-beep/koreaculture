@@ -16,3 +16,27 @@
 .hb-one-garment{padding:24px;overflow:hidden}
 .hb-one-garment img{display:block;object-position:center}
 @media(prefers-reduced-motion:reduce){.hb-app *{transition:none!important;animation:none!important}}
+
+/* Stable, non-glowing selection and a shared full-body alignment system. */
+.hb-garments button.selected{outline:0;background:#e6f1fb;box-shadow:inset 0 0 0 4px #2878b8}
+.hb-layer.selected:after{content:none!important}
+.hb-layer,.hb-layer.selected,.hb-layer img{filter:none!important;transform:none!important}
+.hb-character{overflow:visible}
+.hb-layer img{object-fit:contain!important;object-position:center!important}
+.slot-socks{left:20%;top:77%;width:60%;height:22%}
+.slot-bottom{left:7%;top:39%;width:86%;height:51%}
+.slot-top{left:4%;top:23%;width:92%;height:37%}
+.slot-coat{left:-2%;top:20%;width:104%;height:70%}
+.slot-shoes{left:20%;top:79%;width:60%;height:20%}
+.slot-ornament{left:48%;top:38%;width:32%;height:29%}
+.slot-coat img{object-fit:contain!important;object-position:center!important}
+.slot-coat .hb-tint,.slot-coat .hb-pattern{-webkit-mask-position:center!important;mask-position:center!important;-webkit-mask-size:contain!important;mask-size:contain!important}
+.hb-drag-ghost{filter:none}
+.hb-coat-card.selected{outline:0;box-shadow:inset 0 0 0 5px #2878b8}
+.hb-word-options button.selected,.hb-label-cards button.selected{outline:0;background:#e6f1fb;box-shadow:inset 0 0 0 4px #2878b8,0 6px 0 #c9bdab}
+.hb-one-garment{padding:28px;overflow:hidden}
+.hb-one-garment img{display:block;object-position:center;object-fit:contain}
+.hb-picture-두루마기{padding:38px}
+.hb-word-drop{touch-action:none}
+.hb-word-options button,.hb-label-cards button{touch-action:none}
+@media(max-width:1050px){.label-top,.label-socks{left:-5%}.label-bottom,.label-shoes,.label-ornament{right:-5%}}
