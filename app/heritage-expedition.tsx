@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {Button} from '@/components/ui/button';
 import {speakKorean,stopKoreanSpeech} from './korean-speech';
 import {HERITAGE_CLUES,HERITAGE_TREASURES,HeritageTreasure,shuffled} from './heritage-data';
@@ -32,11 +32,13 @@ function HiddenHeritage({soundOn,onBack,onComplete,onNext}:{soundOn:boolean;onBa
   const [message,setMessage]=useState('풍경 속에 숨어 있는 문화재를 찾아보세요!');
   const [focus,setFocus]=useState<string|null>(null);
   const [placements,setPlacements]=useState<Record<string,number>>(()=>newHiddenPlacements());
+  const speechTimer=useRef<number|null>(null);
   const complete=found.length===HERITAGE_TREASURES.length;
   useEffect(()=>{if(complete)onComplete()},[complete,onComplete]);
-  const find=(treasure:HeritageTreasure)=>{if(!found.includes(treasure.id)){setFound(value=>[...value,treasure.id]);playDingDongDaeng(soundOn)}setFocus(treasure.id);setMessage(`${treasure.name}: ${treasure.desc}`);speakKorean(treasure.name,soundOn)};
-  const miss=()=>{const clue=HERITAGE_CLUES[Math.floor(Math.random()*HERITAGE_CLUES.length)];setFocus(null);setMessage(clue);speakKorean(clue,soundOn)};
-  const reset=()=>{setFound([]);setFocus(null);setPlacements(current=>newHiddenPlacements(current));setMessage('문화재의 위치가 자연스러운 장소 안에서 바뀌었어요!')};
+  useEffect(()=>()=>{if(speechTimer.current!==null)window.clearTimeout(speechTimer.current)},[]);
+  const find=(treasure:HeritageTreasure)=>{const isNew=!found.includes(treasure.id);if(isNew){setFound(value=>[...value,treasure.id]);playDingDongDaeng(soundOn)}setFocus(treasure.id);setMessage(`${treasure.name}: ${treasure.desc}`);if(speechTimer.current!==null)window.clearTimeout(speechTimer.current);const read=()=>{speechTimer.current=null;speakKorean(`${treasure.name}. ${treasure.desc}`,soundOn)};if(isNew&&soundOn)speechTimer.current=window.setTimeout(read,620);else read()};
+  const miss=()=>{if(speechTimer.current!==null){window.clearTimeout(speechTimer.current);speechTimer.current=null}const clue=HERITAGE_CLUES[Math.floor(Math.random()*HERITAGE_CLUES.length)];setFocus(null);setMessage(clue);speakKorean(clue,soundOn)};
+  const reset=()=>{if(speechTimer.current!==null){window.clearTimeout(speechTimer.current);speechTimer.current=null}stopKoreanSpeech();setFound([]);setFocus(null);setPlacements(current=>newHiddenPlacements(current));setMessage('문화재의 위치가 자연스러운 장소 안에서 바뀌었어요!')};
   return <section className="expedition-activity hidden-activity"><div className="expedition-heading"><Button variant="outline" onClick={onBack}>← 이전</Button><div><h2>숨은 문화재 찾기</h2><p>문화재가 놓인 자연스러운 장소를 자세히 살펴봐요.</p></div><strong>{found.length} / {HERITAGE_TREASURES.length} 발견</strong></div><div className="hidden-scene" onClick={miss}><img className="hidden-background" src="/heritage-hidden-silla-joseon.png" alt="조선과 신라 시대의 야외 마을, 궁궐, 연못과 고분군 풍경"/>{HERITAGE_TREASURES.map(treasure=>{const point=treasure.positions[placements[treasure.id]??0];const isFound=found.includes(treasure.id);return <button key={treasure.id} className={`hidden-target hidden-${treasure.id} ${isFound?'found':''} ${focus===treasure.id?'focused':''}`} style={{left:`${point.x}%`,top:`${point.y}%`,width:`${treasure.size}%`}} onClick={event=>{event.stopPropagation();find(treasure)}} aria-label={`${treasure.name} 찾기`}><img src={treasure.image} alt=""/>{isFound&&<span>✓</span>}</button>})}{complete&&<div className="heritage-finish" onClick={event=>event.stopPropagation()}><h2>숨은 문화재를 모두 찾았어요!</h2><div><Button onClick={reset}>위치를 바꾸어 다시 찾기</Button><Button onClick={onNext}>다음 활동으로</Button><Button variant="outline" onClick={onBack}>활동 선택</Button></div></div>}</div><div className="heritage-feedback" aria-live="polite">{message}</div><div className="heritage-strip">{HERITAGE_TREASURES.map(treasure=><article key={treasure.id} className={`${found.includes(treasure.id)?'found ':''}strip-${treasure.id}`}><img src={treasure.image} alt={treasure.name}/><b>{treasure.name}</b>{found.includes(treasure.id)&&<span>✓</span>}</article>)}</div></section>;
 }
 
