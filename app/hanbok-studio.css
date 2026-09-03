@@ -56,3 +56,18 @@
 .hb-coat-card{padding:18px!important}
 .hb-garments button{padding:10px!important}
 .hb-garments button.selected,.hb-coat-card.selected{background:#e6f1fb!important;box-shadow:none!important}
+
+/* Name-learning uses separate whole-garment hit zones so transparent PNG layers cannot block each other. */
+.hb-character.with-hit-zones .hb-layer{pointer-events:none!important}
+.hb-hit-zone{position:absolute;z-index:15;border:0!important;outline:0!important;background:transparent!important;padding:0!important;box-shadow:none!important;touch-action:manipulation;cursor:pointer}
+.hit-top{left:12%;top:24%;width:76%;height:27%}
+.hit-bottom{left:12%;top:51%;width:76%;height:29%}
+.hit-socks{left:25%;top:80%;width:50%;height:10%}
+.hit-shoes{left:22%;top:90%;width:56%;height:9%}
+.hit-ornament{left:52%;top:42%;width:27%;height:23%;z-index:17}
+.hit-coat{left:7%;top:23%;width:86%;height:66%}
+
+/* Keep the full garment and heading inside one electronic-board viewport. */
+.hb-picture-cards{padding-top:4px}
+.hb-one-garment{height:min(39vh,360px)!important;width:min(620px,86%)!important;padding:36px!important;overflow:visible!important}
+.hb-one-garment img{width:92%!important;height:92%!important;margin:auto!important;object-fit:contain!important}
