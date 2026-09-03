@@ -40,13 +40,13 @@
 .hb-word-options button,.hb-label-cards button{touch-action:none}
 @media(max-width:1050px){.label-top,.label-socks{left:-5%}.label-bottom,.label-shoes,.label-ornament{right:-5%}}
 
-/* In label play, beoseon stay on the children and flower shoes sit beside them. */
-.hb-label-pair article{position:relative;overflow:visible;padding-right:18%}
-.hb-label-pair article>.hb-character{transform:translateX(-8%)}
+/* Beoseon stay on the children while full-size flower shoes sit to each child's right. */
+.hb-label-pair article,.hb-shoes-beside-pair article{position:relative;overflow:visible;padding-right:18%}
+.hb-label-pair article>.hb-character,.hb-shoes-beside-pair article>.hb-character{transform:translateX(-8%)}
 .hb-detached-shoes{position:absolute;z-index:18;right:2%;bottom:8%;width:27%;min-height:92px;padding:5px;border:3px solid #202936;border-radius:18px;background:#fffaf0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .hb-detached-shoes img{display:block;width:100%;height:72px;object-fit:contain}
 .hb-detached-shoes b{margin-top:2px;padding:3px 8px;border-radius:9px;background:#f2bd37;font-size:15px}
-@media(max-width:720px){.hb-label-pair article{padding-right:15%}.hb-detached-shoes{right:0;width:30%;min-height:74px}.hb-detached-shoes img{height:56px}}
+@media(max-width:720px){.hb-label-pair article,.hb-shoes-beside-pair article{padding-right:15%}.hb-detached-shoes{right:0;width:30%;min-height:74px}.hb-detached-shoes img{height:56px}}
 
 /* Hanbok artwork stays fully visible without frames or clipping. */
 .hb-home nav button,.hb-garments button,.hb-coat-card,.hb-one-garment,.hb-label-pair article,.hb-detached-shoes{border:0!important;outline:0!important;box-shadow:none!important;overflow:visible!important}
