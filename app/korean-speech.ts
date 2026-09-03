@@ -2,6 +2,7 @@
 
 let speechRequest=0;
 let voiceTimer:number|undefined;
+let speakTimer:number|undefined;
 
 const femaleNames=/Yuna|SunHi|Heami|Seoyeon|Sora|Yu-ri|Soeun|Jimin|Nari|유나|선히|희미|서연|소라|유리|소은|지민|나리|여성|Female|Google 한국의/i;
 const maleNames=/InJoon|Joon|Minho|Hyunsu|Eddy|Grandpa|Reed|Rocko|인준|준호|민호|현수|남성|Male/i;
@@ -38,7 +39,9 @@ export function prepareKoreanVoice(){
 export function stopKoreanSpeech(){
   speechRequest+=1;
   if(voiceTimer!==undefined)window.clearTimeout(voiceTimer);
+  if(speakTimer!==undefined)window.clearTimeout(speakTimer);
   voiceTimer=undefined;
+  speakTimer=undefined;
   if(typeof window!=='undefined'&&'speechSynthesis'in window)window.speechSynthesis.cancel();
 }
 
@@ -48,7 +51,9 @@ export function speakKorean(text:string,enabled:boolean){
   const request=++speechRequest;
   synth.cancel();
   if(voiceTimer!==undefined)window.clearTimeout(voiceTimer);
+  if(speakTimer!==undefined)window.clearTimeout(speakTimer);
   voiceTimer=undefined;
+  speakTimer=undefined;
   if(!enabled||!text.trim())return;
   const play=(allowSystemKorean=false)=>{
     if(request!==speechRequest)return false;
@@ -60,8 +65,12 @@ export function speakKorean(text:string,enabled:boolean){
     utterance.rate=.84;
     utterance.pitch=1;
     utterance.volume=1;
-    synth.resume();
-    synth.speak(utterance);
+    speakTimer=window.setTimeout(()=>{
+      speakTimer=undefined;
+      if(request!==speechRequest)return;
+      synth.resume();
+      synth.speak(utterance);
+    },45);
     return true;
   };
   if(play())return;
