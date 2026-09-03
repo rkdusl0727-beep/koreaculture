@@ -4,6 +4,8 @@ import {useEffect,useRef,useState} from 'react';
 import {Button} from '@/components/ui/button';
 import {speakKorean,stopKoreanSpeech} from './korean-speech';
 import HomeIconButton from './home-icon-button';
+import SoundIconButton from './sound-icon-button';
+import {playDingDongDaeng} from './correct-sound';
 import './hanbok-studio.css';
 
 type Props={home:()=>void;soundOn:boolean;toggleSound:()=>void};
@@ -19,7 +21,7 @@ type Outfit=Partial<Record<Slot,Worn>>;
 const root='/hanbok-studio/garments/';
 const names:GarmentName[]=['저고리','치마','바지','두루마기','버선','꽃신','노리개'];
 const messages:Record<GarmentName,string>={저고리:'저고리예요.',치마:'치마예요.',바지:'바지예요.',두루마기:'두루마기예요.',버선:'버선이에요.',꽃신:'꽃신이에요.',노리개:'노리개예요.'};
-const hints:Record<GarmentName,string>={저고리:'몸의 위쪽에 입는 옷이에요.',치마:'아래로 넓게 펼쳐진 옷이에요.',바지:'두 다리를 넣어 입는 옷이에요.',두루마기:'한복 위에 입는 긴 옷이에요.',버선:'발에 먼저 신는 흰색 옷이에요.',꽃신:'버선 위에 신어요.',노리개:'한복에 다는 장식이에요.'};
+const hints:Record<GarmentName,string>={저고리:'몸의 위쪽에 입는 옷이에요.',치마:'아래로 넓게 펼쳐진 옷이에요.',바지:'두 다리를 넣어 입는 옷이에요.',두루마기:'한복 위에 입는 긴 옷이에요.',버선:'버선은 두 발에 신는 흰색 옷이에요.',꽃신:'버선 위에 신어요.',노리개:'한복에 다는 장식이에요.'};
 const categories:GarmentName[]=names;
 const colors=[['빨강','#e7473c'],['분홍','#ed8eaa'],['노랑','#f2bd37'],['초록','#318b61'],['파랑','#3789c4'],['남색','#34527d'],['보라','#78569d'],['흰색','#fffaf0'],['연두','#91c86c'],['하늘색','#91cbe4']];
 const patterns:Pattern[]=['무늬 없음','꽃무늬','구름무늬','나비무늬','단순 반복무늬'];
@@ -30,7 +32,7 @@ const garments:Garment[]=[
   ...make('치마',5,'bottom','chima',['#e7473c','#ed8eaa','#f2bd37','#318b61','#3789c4'],5),
   ...make('바지',5,'bottom','baji',['#34527d','#d9c39f','#91c86c','#78569d','#91cbe4'],5),
   ...make('두루마기',3,'coat','durumagi',['#496aa3','#c98286','#c9b68d'],3).map((garment,index)=>index===0?{...garment,img:`${root}durumagi-complete-v2.png`}:garment),
-  ...make('버선',3,'socks','beoseon',['#fffaf0','#e9e6dc','#f5e6cf'],2).map((garment,index)=>({...garment,img:`${root}beoseon-${index%2+1}-aligned.png`})),
+  ...make('버선',3,'socks','beoseon',['#fffaf0','#e9e6dc','#f5e6cf'],2).map(garment=>({...garment,img:`${root}beoseon-authentic.png`})),
   ...make('꽃신',4,'shoes','flower-shoes',['#d83f44','#315f8b','#ed8eaa','#78569d'],2).map((garment,index)=>({...garment,img:`${root}flower-shoes-${index%2+1}-aligned.png`})),
   ...Array.from({length:4},(_,index):Garment=>({id:`norigae-${index+1}`,name:'노리개',slot:'ornament',img:`${root}norigae.png`,color:['#e6ad28','#e7473c','#318b61','#3789c4'][index],variant:`노리개 ${index+1}`})),
 ];
@@ -42,26 +44,9 @@ const boyOutfit:Outfit={socks:makeWorn('버선',2),bottom:makeWorn('바지',2),t
 const girlLabelOutfit:Outfit={...girlOutfit,shoes:undefined};
 const boyLabelOutfit:Outfit={...boyOutfit,shoes:undefined};
 
-function playCorrectSound(soundOn:boolean){
-  if(!soundOn||typeof window==='undefined')return;
-  const AudioContextClass=window.AudioContext||(window as typeof window&{webkitAudioContext:typeof AudioContext}).webkitAudioContext;
-  if(!AudioContextClass)return;
-  const context=new AudioContextClass();
-  const now=context.currentTime;
-  [659.25,783.99,987.77].forEach((frequency,index)=>{
-    const oscillator=context.createOscillator();
-    const gain=context.createGain();
-    oscillator.type='sine';oscillator.frequency.value=frequency;
-    gain.gain.setValueAtTime(0,now+index*.11);
-    gain.gain.linearRampToValueAtTime(.16,now+index*.11+.015);
-    gain.gain.exponentialRampToValueAtTime(.001,now+index*.11+.28);
-    oscillator.connect(gain);gain.connect(context.destination);
-    oscillator.start(now+index*.11);oscillator.stop(now+index*.11+.3);
-  });
-  window.setTimeout(()=>void context.close(),800);
-}
+const playCorrectSound=playDingDongDaeng;
 
-function Header({title,back,home,soundOn,toggleSound}:{title:string;back:()=>void;home:()=>void;soundOn:boolean;toggleSound:()=>void}){return <header className="hb-header"><HomeIconButton onClick={home}/><Button variant="outline" onClick={back}>← 이전</Button><h1>{title}</h1><Button variant="outline" onClick={toggleSound}>{soundOn?'소리 켬':'소리 끔'}</Button></header>}
+function Header({title,back,home,soundOn,toggleSound}:{title:string;back:()=>void;home:()=>void;soundOn:boolean;toggleSound:()=>void}){return <header className="hb-header"><HomeIconButton onClick={home}/><Button variant="outline" onClick={back}>← 이전</Button><h1>{title}</h1><SoundIconButton soundOn={soundOn} onClick={toggleSound}/></header>}
 function Layer({slot,worn,selected,onSelect,side}:{slot:Slot;worn:Worn;selected:boolean;onSelect:()=>void;side?:'girl'|'boy'}){const style={'--tint':worn.color,'--mask':`url(${worn.garment.img})`} as React.CSSProperties;return <button type="button" data-hb-side={side} data-hb-slot={slot} className={`hb-layer slot-${slot} pattern-${patterns.indexOf(worn.pattern)} ${selected?'selected':''}`} style={style} onClick={event=>{event.stopPropagation();onSelect()}} aria-label={`${worn.garment.name} 전체`}><img src={worn.garment.img} alt="" draggable={false}/><i className="hb-tint"/><i className="hb-pattern"/></button>}
 function Character({kind,outfit,selected,onSelect,labels,side}:{kind:0|1;outfit:Outfit;selected?:Slot|null;onSelect?:(slot:Slot)=>void;labels?:Partial<Record<Slot,string>>;side?:'girl'|'boy'}){return <div className="hb-character"><img className="hb-base" src={`/hanbok-studio/base/child-${kind?'b':'a'}.png`} alt="흰색 런닝셔츠와 사각 반바지를 입고 정면으로 선 어린이" draggable={false}/>{slotOrder.map(slot=>outfit[slot]&&<Layer key={slot} slot={slot} worn={outfit[slot]!} selected={selected===slot} onSelect={()=>onSelect?.(slot)} side={side}/>)}{Object.entries(labels||{}).map(([slot,label])=><span key={slot} className={`hb-fixed-name label-${slot}`}>{label}</span>)}</div>}
 

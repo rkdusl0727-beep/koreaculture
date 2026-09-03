@@ -6,6 +6,8 @@ import YutGame from './yut-game';
 import HanbokStudio from './hanbok-studio';
 import HeritageExpedition from './heritage-expedition';
 import HomeIconButton from './home-icon-button';
+import SoundIconButton from './sound-icon-button';
+import {playDingDongDaeng} from './correct-sound';
 import {prepareKoreanVoice,speakKorean,stopKoreanSpeech} from './korean-speech';
 
 type Screen = 'home' | 'map' | 'hanbok' | 'yut' | 'objects' | 'detective';
@@ -32,6 +34,7 @@ const menus = [
 
 function tone(kind: 'ui' | 'success', soundOn: boolean, at = 0) {
   if (!soundOn || typeof window === 'undefined') return;
+  if(kind==='success'){playDingDongDaeng(soundOn);return}
   const AudioContextClass = window.AudioContext || (window as typeof window & {webkitAudioContext: typeof AudioContext}).webkitAudioContext;
   const ctx = new AudioContextClass();
   const start = ctx.currentTime + at;
@@ -49,11 +52,11 @@ const speak=speakKorean;
 function Confetti() { return <div className="confetti" aria-hidden="true">{Array.from({length:24},(_,i)=><i key={i} style={{'--i':i} as React.CSSProperties} />)}</div>; }
 
 function TopBar({title,onHome,soundOn,onSound}:{title:string;onHome:()=>void;soundOn:boolean;onSound:()=>void}) {
-  return <header className="topbar"><HomeIconButton onClick={onHome}/><div className="activity-title"><PngIcon sheet="ui" index={4}/><h1>{title}</h1><PngIcon sheet="ui" index={4}/></div><Button onClick={onSound} variant="outline" className="round-action sound-only" aria-label={soundOn?'소리 끄기':'소리 켜기'}><PngIcon sheet="ui" index={soundOn?1:2}/><span>{soundOn?'소리 켬':'소리 끔'}</span></Button></header>;
+  return <header className="topbar"><HomeIconButton onClick={onHome}/><div className="activity-title"><PngIcon sheet="ui" index={4}/><h1>{title}</h1><PngIcon sheet="ui" index={4}/></div><SoundIconButton soundOn={soundOn} onClick={onSound} className="round-action sound-only"/></header>;
 }
 
 function HomeScreen({go,soundOn,toggleSound}:{go:(s:Screen)=>void;soundOn:boolean;toggleSound:()=>void}) {
-  return <main className="app-shell"><div className="dancheong" aria-hidden="true"/><header className="hero"><div className="hero-copy"><div className="eyebrow"><PngIcon sheet="ui" index={4}/> 오늘의 문화 탐험 <PngIcon sheet="ui" index={4}/></div><h1>우리나라<br/><em>문화 탐험대</em></h1><p>우리나라의 멋과 지혜를 찾아 떠나요!</p></div><div className="hero-mark" aria-hidden="true"><PngIcon sheet="activity" index={10} className="sun"/><PngIcon sheet="activity" index={11} className="cloud"/><PngIcon sheet="explore" index={5} className="gate"/></div></header><section className="menu-section" aria-labelledby="menu-title"><div className="section-heading"><div><span className="mini-label">어디로 떠나볼까요?</span><h2 id="menu-title">탐험을 골라요!</h2></div><Button onClick={toggleSound} aria-label={soundOn?'소리 끄기':'소리 켜기'} variant="outline" size="icon" className="sound-button"><PngIcon sheet="ui" index={soundOn?1:2}/></Button></div><div className="menu-grid">{menus.map(({id,number,title,hint,ui,color,sheet,art,image},index)=><button key={id} className={`menu-card card-${color} ${index===0?'featured':''}`} onClick={()=>go(id)} type="button"><span className="menu-number">{number}</span>{image?<img src={image} alt="" className="menu-art menu-png-art"/>:<PngIcon sheet={sheet} index={art} className="menu-art"/>}<span className="menu-text"><PngIcon sheet="ui" index={ui}/><strong>{title}</strong><small>{hint}</small></span><span className="go" aria-hidden="true">→</span></button>)}</div></section><footer><span>●</span><span>●</span><span>●</span> 준비됐나요? 함께 출발!</footer></main>;
+  return <main className="app-shell"><div className="dancheong" aria-hidden="true"/><header className="hero"><div className="hero-copy"><div className="eyebrow"><PngIcon sheet="ui" index={4}/> 오늘의 문화 탐험 <PngIcon sheet="ui" index={4}/></div><h1>우리나라<br/><em>문화 탐험대</em></h1><p>우리나라의 멋과 지혜를 찾아 떠나요!</p></div><div className="hero-mark" aria-hidden="true"><PngIcon sheet="activity" index={10} className="sun"/><PngIcon sheet="activity" index={11} className="cloud"/><PngIcon sheet="explore" index={5} className="gate"/></div></header><section className="menu-section" aria-labelledby="menu-title"><div className="section-heading"><div><span className="mini-label">어디로 떠나볼까요?</span><h2 id="menu-title">탐험을 골라요!</h2></div><SoundIconButton soundOn={soundOn} onClick={toggleSound} className="sound-button"/></div><div className="menu-grid">{menus.map(({id,number,title,hint,ui,color,sheet,art,image},index)=><button key={id} className={`menu-card card-${color} ${index===0?'featured':''}`} onClick={()=>go(id)} type="button"><span className="menu-number">{number}</span>{image?<img src={image} alt="" className="menu-art menu-png-art"/>:<PngIcon sheet={sheet} index={art} className="menu-art"/>}<span className="menu-text"><PngIcon sheet="ui" index={ui}/><strong>{title}</strong><small>{hint}</small></span><span className="go" aria-hidden="true">→</span></button>)}</div></section><footer><span>●</span><span>●</span><span>●</span> 준비됐나요? 함께 출발!</footer></main>;
 }
 
 type PuzzleRegion={id:string;name:string;src:string;color:string;cx:number;cy:number;bounds:[number,number,number,number];hint:string};
@@ -100,8 +103,8 @@ function MapActivity({home,soundOn,toggleSound}:{home:()=>void;soundOn:boolean;t
         {difficulty&&<Button variant="outline" onClick={restart} className="retry-map"><PngIcon sheet="ui" index={10}/> 다시 하기</Button>}
       </div>
       {stage==='select'?<div className="difficulty-grid">
-        <button onClick={()=>begin('easy')}><PngIcon sheet="explore" index={0}/><span>쉬운 퍼즐</span><b>경계선 안내 퍼즐</b><small>지역별 자리선이 보여 쉽게 맞춰요</small></button>
-        <button onClick={()=>begin('challenge')}><PngIcon sheet="explore" index={0}/><span>도전 퍼즐</span><b>외곽선 판퍼즐</b><small>지역 경계 없이 조각 모양을 보고 맞춰요</small></button>
+        <button onClick={()=>begin('easy')}><PngIcon sheet="explore" index={0}/><span>쉬운 퍼즐</span><small>지역별 자리선이 보여 쉽게 맞춰요</small></button>
+        <button onClick={()=>begin('challenge')}><PngIcon sheet="explore" index={0}/><span>도전 퍼즐</span><small>지역 경계 없이 조각 모양을 보고 맞춰요</small></button>
       </div>:<div className={`map-game stage-${stage} difficulty-${difficulty}`}>
         <aside className="piece-tray left">{stage==='pieces'&&ordered.filter((_,index)=>index%2===0&&!placed.includes(ordered[index].id)).map(region=><button key={region.id} className={selectedPiece===region.id?'selected':''} onPointerDown={event=>pointerDown('piece',region.id,event)}><RegionPiece region={region}/><b>{region.name}</b></button>)}</aside>
         <div className="map-center">
