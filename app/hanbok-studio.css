@@ -96,5 +96,9 @@
 /* The child bases already wear fitted white beoseon; hide the loose product cutout after selection. */
 .slot-socks img,.slot-socks .hb-tint{opacity:0!important}
 
+/* In name learning, place the beoseon tag beside the child's visible white socks. */
+.hb-name-explore .label-socks{left:-12%;top:87%}
+.hb-name-explore .label-socks:after{width:46px}
+
 /* Accessory choices replace the old selectable-pattern controls. */
 .hb-accessory-guide{font-size:15px!important;min-height:0!important;margin:0 0 8px}.hb-accessories{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.hb-accessories button{min-height:128px;padding:6px;border:3px solid #202936;border-radius:16px;background:#fffaf0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900}.hb-accessories button.active{background:#e6f1fb;box-shadow:inset 0 0 0 3px #2878b8}.hb-accessories img{display:block;width:100%;height:88px;object-fit:contain}
