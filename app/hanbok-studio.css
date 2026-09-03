@@ -70,6 +70,7 @@
 .label-tie{right:-22%;top:33%}
 .label-tie:after{right:100%;top:50%;width:138px}
 .label-tie:before{content:'';position:absolute;right:calc(100% + 132px);top:calc(50% - 6px);width:0;height:0;border-top:7px solid transparent;border-bottom:7px solid transparent;border-right:11px solid #202936}
+.hb-name-explore .hb-fixed-name{pointer-events:none}
 
 /* Keep the full garment and heading inside one electronic-board viewport. */
 .hb-picture-cards{padding-top:4px}
