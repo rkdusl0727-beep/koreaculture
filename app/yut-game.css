@@ -9,3 +9,12 @@
 .board-touch.target{z-index:12}
 .route-choice-label{position:absolute;left:50%;bottom:105%;transform:translateX(-50%);min-width:64px;padding:5px 8px;border:3px solid #202936;border-radius:12px;background:white;color:#202936;font-size:13px;font-weight:900;white-space:nowrap;box-shadow:0 4px 0 #f2bd37}
 .pawn-anchor.red{margin-left:-2.1%}.pawn-anchor.blue{margin-left:2.1%}
+
+/* Crisp touch feedback: no click zoom, glow bloom, or smeared focus state. */
+.png-yut-app button{-webkit-tap-highlight-color:transparent;transition:background-color .12s ease,border-color .12s ease,opacity .12s ease!important}
+.png-yut-app button:active{transform:none!important;filter:none!important}
+.png-yut-app button:focus:not(:focus-visible){outline:0!important;box-shadow:none}
+.png-yut-start>div button:active,.png-team-names button:active,.png-throw-button:active{transform:none!important}
+.board-touch.target{border:6px solid #f0b91e;background:#fff4a955;box-shadow:0 0 0 4px white;animation:none}
+.png-pawn.selectable{filter:none;animation:none;outline:5px solid #f0b91e;outline-offset:2px;border-radius:50%}
+.result-strip span.active{transform:none;box-shadow:inset 0 0 0 2px #e7473c}
