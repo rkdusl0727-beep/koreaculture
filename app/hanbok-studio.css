@@ -78,3 +78,19 @@
 .hb-label-cards{grid-template-columns:repeat(6,minmax(100px,1fr))}
 @media(max-width:720px){.hb-label-cards{grid-template-columns:repeat(3,1fr)}.label-tie{right:-5%}.label-tie:after{width:78px}.label-tie:before{right:calc(100% + 72px)}}
 @media(max-width:480px){.hb-label-cards{grid-template-columns:repeat(2,1fr)}}
+
+/* Every garment uses the same full-body anchor system. */
+.hb-base{object-position:center top!important}
+.slot-socks{left:25%;top:79%;width:50%;height:18%}
+.slot-bottom{left:4%;top:40%;width:92%;height:51.5%}
+.slot-top{left:-2%;top:20.5%;width:104%;height:41.5%}
+.slot-coat{left:-2%;top:20%;width:104%;height:70%}
+.slot-shoes{left:23%;top:85%;width:54%;height:13%}
+.slot-ornament{left:50%;top:36%;width:30%;height:31%}
+.hit-top{left:7%;top:21%;width:86%;height:34%}
+.hit-bottom{left:8%;top:49%;width:84%;height:39%}
+.hit-socks{left:28%;top:81%;width:44%;height:12%}
+.hit-shoes{left:24%;top:87%;width:52%;height:10%}
+.hit-ornament{left:50%;top:38%;width:30%;height:27%;z-index:17}
+/* The child bases already wear fitted white beoseon; hide the loose product cutout after selection. */
+.slot-socks img,.slot-socks .hb-tint,.slot-socks .hb-pattern{opacity:0!important}
