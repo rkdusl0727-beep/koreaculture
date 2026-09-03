@@ -57,7 +57,7 @@ export function speakKorean(text:string,enabled:boolean){
     const utterance=new SpeechSynthesisUtterance(naturalKorean(text));
     utterance.lang='ko-KR';
     utterance.voice=voice;
-    utterance.rate=.91;
+    utterance.rate=.84;
     utterance.pitch=1;
     utterance.volume=1;
     synth.resume();

@@ -67,12 +67,14 @@
 .hit-ornament{left:52%;top:42%;width:27%;height:23%;z-index:17}
 .hit-tie{left:41%;top:35%;width:33%;height:18%;z-index:19}
 .hit-coat{left:7%;top:23%;width:86%;height:66%}
-.label-tie{right:-22%;top:38%}.label-tie:after{right:100%;top:50%}
+.label-tie{right:-22%;top:33%}
+.label-tie:after{right:100%;top:50%;width:138px}
+.label-tie:before{content:'';position:absolute;right:calc(100% + 132px);top:calc(50% - 6px);width:0;height:0;border-top:7px solid transparent;border-bottom:7px solid transparent;border-right:11px solid #202936}
 
 /* Keep the full garment and heading inside one electronic-board viewport. */
 .hb-picture-cards{padding-top:4px}
 .hb-one-garment{height:min(39vh,360px)!important;width:min(620px,86%)!important;padding:36px!important;overflow:visible!important}
 .hb-one-garment img{width:92%!important;height:92%!important;margin:auto!important;object-fit:contain!important}
 .hb-label-cards{grid-template-columns:repeat(6,minmax(100px,1fr))}
-@media(max-width:720px){.hb-label-cards{grid-template-columns:repeat(3,1fr)}.label-tie{right:-5%}}
+@media(max-width:720px){.hb-label-cards{grid-template-columns:repeat(3,1fr)}.label-tie{right:-5%}.label-tie:after{width:78px}.label-tie:before{right:calc(100% + 72px)}}
 @media(max-width:480px){.hb-label-cards{grid-template-columns:repeat(2,1fr)}}
