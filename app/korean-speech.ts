@@ -50,13 +50,13 @@ export function speakKorean(text:string,enabled:boolean){
   if(voiceTimer!==undefined)window.clearTimeout(voiceTimer);
   voiceTimer=undefined;
   if(!enabled||!text.trim())return;
-  const play=()=>{
+  const play=(allowSystemKorean=false)=>{
     if(request!==speechRequest)return false;
     const voice=preferredKoreanVoice(synth);
-    if(!voice)return false;
+    if(!voice&&!allowSystemKorean)return false;
     const utterance=new SpeechSynthesisUtterance(naturalKorean(text));
     utterance.lang='ko-KR';
-    utterance.voice=voice;
+    if(voice)utterance.voice=voice;
     utterance.rate=.84;
     utterance.pitch=1;
     utterance.volume=1;
@@ -65,7 +65,7 @@ export function speakKorean(text:string,enabled:boolean){
     return true;
   };
   if(play())return;
-  const voicesReady=()=>{if(play())synth.removeEventListener('voiceschanged',voicesReady)};
+  const voicesReady=()=>{if(play()){synth.removeEventListener('voiceschanged',voicesReady);if(voiceTimer!==undefined)window.clearTimeout(voiceTimer);voiceTimer=undefined}};
   synth.addEventListener('voiceschanged',voicesReady);
-  voiceTimer=window.setTimeout(()=>{synth.removeEventListener('voiceschanged',voicesReady);voiceTimer=undefined},2500);
+  voiceTimer=window.setTimeout(()=>{synth.removeEventListener('voiceschanged',voicesReady);voiceTimer=undefined;play(true)},350);
 }
