@@ -2,7 +2,7 @@
 
 import {useEffect,useRef,useState} from 'react';
 import {Button} from '@/components/ui/button';
-import {setNormalAudioSpeed,speakKorean,stopKoreanSpeech} from './korean-speech';
+import {speakKorean,stopKoreanSpeech} from './korean-speech';
 import HomeIconButton from './home-icon-button';
 import SoundIconButton from './sound-icon-button';
 import {playDingDongDaeng} from './correct-sound';
@@ -21,7 +21,6 @@ type Outfit=Partial<Record<Slot,Worn>>;
 const root='/hanbok-studio/garments/';
 const names:GarmentName[]=['저고리','치마','바지','두루마기','버선','꽃신','노리개'];
 const messages:Record<LearningName,string>={저고리:'저고리예요.',치마:'치마예요.',바지:'바지예요.',두루마기:'두루마기예요.',버선:'버선이에요.',꽃신:'꽃신이에요.',노리개:'노리개예요.',고름:'고름이에요.'};
-const nameAudio:Record<LearningName,string>={저고리:'jeogori',치마:'chima',바지:'baji',두루마기:'durumagi',버선:'beoseon',꽃신:'flower-shoes',노리개:'norigae',고름:'goreum'};
 const hints:Record<LearningName,string>={저고리:'몸의 위쪽에 입는 옷이에요.',치마:'아래로 넓게 펼쳐진 옷이에요.',바지:'두 다리를 넣어 입는 옷이에요.',두루마기:'한복 위에 입는 긴 옷이에요.',버선:'버선은 두 발에 신는 흰색 옷이에요.',꽃신:'버선 위에 신어요.',노리개:'한복에 다는 장식이에요.',고름:'저고리 앞에서 길게 묶는 끈이에요.'};
 const categories:GarmentName[]=names;
 const colors=[['빨강','#e7473c'],['분홍','#ed8eaa'],['노랑','#f2bd37'],['초록','#318b61'],['파랑','#3789c4'],['남색','#34527d'],['보라','#78569d'],['흰색','#fffaf0'],['연두','#91c86c'],['하늘색','#91cbe4']];
@@ -65,9 +64,9 @@ function Design({soundOn,onNames,home}:{soundOn:boolean;onNames:()=>void;home:()
 }
 
 function ExploreNames({soundOn}:{soundOn:boolean}){
-  const [girlSelected,setGirlSelected]=useState<Slot|null>(null);const [boySelected,setBoySelected]=useState<Slot|null>(null);const [girlNamed,setGirlNamed]=useState<Slot[]>([]);const [boyNamed,setBoyNamed]=useState<Slot[]>([]);const [coatSelected,setCoatSelected]=useState(false);const audio=useRef<HTMLAudioElement|null>(null);
-  useEffect(()=>()=>{audio.current?.pause();audio.current=null},[]);
-  const playName=(name:LearningName)=>{stopKoreanSpeech();audio.current?.pause();audio.current=null;if(!soundOn)return;const voice=setNormalAudioSpeed(new Audio(`/audio/hanbok/${nameAudio[name]}.wav`));audio.current=voice;void voice.play().catch(()=>speakKorean(messages[name],true))};
+  const [girlSelected,setGirlSelected]=useState<Slot|null>(null);const [boySelected,setBoySelected]=useState<Slot|null>(null);const [girlNamed,setGirlNamed]=useState<Slot[]>([]);const [boyNamed,setBoyNamed]=useState<Slot[]>([]);const [coatSelected,setCoatSelected]=useState(false);const lastSpoken=useRef<LearningName|null>(null);
+  useEffect(()=>{if(!soundOn){stopKoreanSpeech();lastSpoken.current=null}return()=>stopKoreanSpeech()},[soundOn]);
+  const playName=(name:LearningName)=>{if(!soundOn||lastSpoken.current===name)return;lastSpoken.current=name;stopKoreanSpeech();speakKorean(`${messages[name]} ${hints[name]}`,true)};
   const choose=(name:LearningName,side:'girl'|'boy',slot:Slot)=>{if(side==='girl'){setGirlSelected(slot);setGirlNamed(value=>value.includes(slot)?value:[...value,slot])}else{setBoySelected(slot);setBoyNamed(value=>value.includes(slot)?value:[...value,slot])}setCoatSelected(false);playName(name)};
   const labelFor=(outfit:Outfit,named:Slot[])=>({...Object.fromEntries(Object.entries(outfit).filter(([slot])=>named.includes(slot as Slot)).map(([slot,worn])=>[slot,worn!.garment.name])),...(named.includes('tie')?{tie:'고름'}:{})});
   const detachedShoes=(side:'girl'|'boy',outfit:Outfit)=><button type="button" className="hb-detached-shoes" onClick={()=>choose('꽃신',side,'shoes')} aria-label={`${side==='girl'?'치마':'바지'} 한복 꽃신`}><img src={outfit.shoes!.garment.img} alt="꽃신"/>{(side==='girl'?girlNamed:boyNamed).includes('shoes')&&<b>꽃신</b>}</button>;
