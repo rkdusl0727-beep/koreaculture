@@ -12,7 +12,13 @@ export type BodyFitProfile={
 };
 
 export type GarmentFit={left:number;top:number;width:number;height:number;rotation:number;zIndex:number};
-type VisibleTarget={left:number;top:number;width:number;rotation?:number;zIndex?:number};
+export type WearablePlacement={x:number;y:number;width:number;height:number;scale:number;rotation:number;zIndex:number};
+export type CharacterFitProfile={
+  jeogori:WearablePlacement;skirt:WearablePlacement;pants:WearablePlacement;durumagi:WearablePlacement;
+  beoseonLeft:WearablePlacement;beoseonRight:WearablePlacement;shoeLeft:WearablePlacement;shoeRight:WearablePlacement;
+  headband:WearablePlacement;hairAccessoryLeft:WearablePlacement;hairAccessoryRight:WearablePlacement;ornament:WearablePlacement;
+};
+type VisibleTarget={left:number;top:number;width:number;height:number;scale?:number;rotation?:number;zIndex?:number};
 type ImageGeometry={width:number;height:number;alpha:{x:number;y:number;width:number;height:number}};
 
 // All values use the shared 1:2 character canvas. These anchors are intentionally
@@ -46,7 +52,6 @@ const geometry:Record<string,ImageGeometry>={
   'chima-4':{width:271,height:321,alpha:{x:10,y:15,width:237,height:296}},
   'chima-5':{width:249,height:321,alpha:{x:10,y:14,width:224,height:297}},
   'chima-6':{width:256,height:321,alpha:{x:14,y:15,width:232,height:296}},
-  'chima-6':{width:256,height:321,alpha:{x:14,y:15,width:232,height:296}},
   'baji-1':{width:256,height:333,alpha:{x:16,y:41,width:230,height:282}},
   'baji-2':{width:271,height:333,alpha:{x:36,y:42,width:224,height:281}},
   'baji-3':{width:270,height:333,alpha:{x:24,y:42,width:222,height:281}},
@@ -70,47 +75,54 @@ const geometry:Record<string,ImageGeometry>={
   'hairpin-2':{width:1536,height:1024,alpha:{x:172,y:19,width:1205,height:975}},
 };
 
-const slotTargets:Record<0|1,Record<Exclude<HanbokFitSlot,'tie'>,VisibleTarget>>={
-  0:{
-    socks:{left:31,top:86,width:38,zIndex:1},bottom:{left:17,top:49.5,width:66,zIndex:2},
-    top:{left:6,top:28.2,width:88,zIndex:3},coat:{left:1,top:24,width:98,zIndex:4},
-    shoes:{left:34,top:92.5,width:32,zIndex:5},ornament:{left:51,top:39,width:27,zIndex:6},
-    hair:{left:22,top:4.2,width:56,zIndex:9},
+// Fixed placements are stored separately for each child on the shared 1:2
+// percentage canvas. No screen-pixel or drop coordinate is used for wearing.
+export const fitProfiles:Record<'child1'|'child2',CharacterFitProfile>={
+  child1:{
+    jeogori:{x:6,y:28.2,width:88,height:34,scale:1,rotation:0,zIndex:3},skirt:{x:17,y:49.5,width:66,height:42,scale:1,rotation:0,zIndex:2},pants:{x:18,y:50,width:64,height:42,scale:1,rotation:0,zIndex:2},durumagi:{x:1,y:24,width:98,height:66,scale:1,rotation:0,zIndex:4},
+    beoseonLeft:{x:31,y:86,width:18,height:11,scale:1,rotation:0,zIndex:1},beoseonRight:{x:51,y:86,width:18,height:11,scale:1,rotation:0,zIndex:1},shoeLeft:{x:34,y:92.5,width:15,height:5.5,scale:1,rotation:0,zIndex:5},shoeRight:{x:51,y:92.5,width:15,height:5.5,scale:1,rotation:0,zIndex:5},
+    headband:{x:29,y:6.4,width:42,height:13,scale:1,rotation:0,zIndex:9},hairAccessoryLeft:{x:21.5,y:7.8,width:11.8,height:9,scale:1,rotation:8,zIndex:11},hairAccessoryRight:{x:68,y:7.4,width:11.5,height:9,scale:1,rotation:-8,zIndex:11},ornament:{x:51,y:39,width:27,height:28,scale:1,rotation:0,zIndex:12},
   },
-  1:{
-    socks:{left:31,top:86.5,width:36,zIndex:1},bottom:{left:17,top:50,width:64,zIndex:2},
-    top:{left:2,top:27.5,width:94,zIndex:3},coat:{left:3,top:24.5,width:92,zIndex:4},
-    shoes:{left:35,top:92.5,width:30,zIndex:5},ornament:{left:50,top:40,width:25,zIndex:6},
-    hair:{left:25,top:3.8,width:48,zIndex:9},
+  child2:{
+    jeogori:{x:2,y:27.5,width:94,height:35,scale:1,rotation:0,zIndex:3},skirt:{x:18,y:50,width:64,height:42,scale:1,rotation:0,zIndex:2},pants:{x:17,y:50,width:64,height:42,scale:1,rotation:0,zIndex:2},durumagi:{x:3,y:24.5,width:92,height:65,scale:1,rotation:0,zIndex:4},
+    beoseonLeft:{x:31,y:86.5,width:17,height:10.5,scale:1,rotation:0,zIndex:1},beoseonRight:{x:50,y:86.5,width:17,height:10.5,scale:1,rotation:0,zIndex:1},shoeLeft:{x:35,y:92.5,width:14,height:5.3,scale:1,rotation:0,zIndex:5},shoeRight:{x:51,y:92.5,width:14,height:5.3,scale:1,rotation:0,zIndex:5},
+    headband:{x:30,y:5.5,width:38,height:12.5,scale:1,rotation:0,zIndex:9},hairAccessoryLeft:{x:28,y:7.6,width:10.7,height:8.5,scale:1,rotation:8,zIndex:11},hairAccessoryRight:{x:63.5,y:7.2,width:10.5,height:8.5,scale:1,rotation:-8,zIndex:11},ornament:{x:50,y:40,width:25,height:26,scale:1,rotation:0,zIndex:12},
   },
 };
 
-const itemTargets:Record<0|1,Record<string,VisibleTarget>>={
-  0:{
-    'hairband-1':{left:29,top:6.7,width:42,zIndex:8},'hairband-2':{left:29,top:6.2,width:42,zIndex:8},
-    'hairpin-1':{left:68,top:7.4,width:11.5,rotation:-8,zIndex:10},'hairpin-2':{left:21.5,top:7.8,width:11.8,rotation:8,zIndex:10},
-  },
-  1:{
-    'hairband-1':{left:30,top:5.8,width:38,zIndex:8},'hairband-2':{left:30,top:5.3,width:38,zIndex:8},
-    'hairpin-1':{left:63.5,top:7.2,width:10.5,rotation:-8,zIndex:10},'hairpin-2':{left:28,top:7.6,width:10.7,rotation:8,zIndex:10},
-  },
-};
+const asTarget=(placement:WearablePlacement):VisibleTarget=>({left:placement.x,top:placement.y,width:placement.width,height:placement.height,scale:placement.scale,rotation:placement.rotation,zIndex:placement.zIndex});
+const paired=(left:WearablePlacement,right:WearablePlacement):VisibleTarget=>({left:Math.min(left.x,right.x),top:Math.min(left.y,right.y),width:Math.max(left.x+left.width,right.x+right.width)-Math.min(left.x,right.x),height:Math.max(left.y+left.height,right.y+right.height)-Math.min(left.y,right.y),scale:1,rotation:0,zIndex:left.zIndex});
+const profileFor=(kind:0|1)=>fitProfiles[kind===0?'child1':'child2'];
+
+function targetFor(kind:0|1,id:string,slot:HanbokFitSlot):VisibleTarget{
+  const profile=profileFor(kind);
+  if(slot==='top')return asTarget(profile.jeogori);
+  if(slot==='bottom')return asTarget(id.startsWith('chima-')?profile.skirt:profile.pants);
+  if(slot==='coat')return asTarget(profile.durumagi);
+  if(slot==='socks')return paired(profile.beoseonLeft,profile.beoseonRight);
+  if(slot==='shoes')return paired(profile.shoeLeft,profile.shoeRight);
+  if(slot==='ornament')return asTarget(profile.ornament);
+  if(id.startsWith('hairband-'))return asTarget(profile.headband);
+  if(id==='hairpin-2')return asTarget(profile.hairAccessoryLeft);
+  if(id==='hairpin-1')return asTarget(profile.hairAccessoryRight);
+  return asTarget(profile.jeogori);
+}
 
 const fallbackGeometry:ImageGeometry={width:100,height:100,alpha:{x:0,y:0,width:100,height:100}};
 
 function imageBox(target:VisibleTarget,image:ImageGeometry):GarmentFit{
-  const width=target.width/(image.alpha.width/image.width);
+  const visibleWidth=target.width*(target.scale||1);
+  const width=visibleWidth/(image.alpha.width/image.width);
   // The character canvas is 1:2, so an undistorted image needs half as much
   // percentage height as percentage width before applying its native ratio.
   const height=width*.5*(image.height/image.width);
   return{
-    left:target.left-(image.alpha.x/image.width)*width,
+    left:target.left-(visibleWidth-target.width)/2-(image.alpha.x/image.width)*width,
     top:target.top-(image.alpha.y/image.height)*height,
     width,height,rotation:target.rotation||0,zIndex:target.zIndex||1,
   };
 }
 
 export function getHanbokFit(kind:0|1,id:string,slot:HanbokFitSlot):GarmentFit{
-  const target=itemTargets[kind][id]||slotTargets[kind][slot as Exclude<HanbokFitSlot,'tie'>]||slotTargets[kind].top;
-  return imageBox(target,geometry[id]||fallbackGeometry);
+  return imageBox(targetFor(kind,id,slot),geometry[id]||fallbackGeometry);
 }

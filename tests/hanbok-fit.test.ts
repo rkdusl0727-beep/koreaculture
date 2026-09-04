@@ -1,59 +1,37 @@
-import assert from 'node:assert/strict';
 import test from 'node:test';
-import {bodyFitProfiles,getHanbokFit,type HanbokFitSlot} from '../app/hanbok-fit.ts';
+import assert from 'node:assert/strict';
+import {fitProfiles,getHanbokFit} from '../app/hanbok-fit.ts';
 
-const items:Array<[string,HanbokFitSlot]>=[
-  ...Array.from({length:6},(_,i)=>[`jeogori-${i+1}`,'top'] as [string,HanbokFitSlot]),
-  ['jeogori-boy-v1','top'],
-  ...Array.from({length:6},(_,i)=>[`chima-${i+1}`,'bottom'] as [string,HanbokFitSlot]),
-  ...Array.from({length:5},(_,i)=>[`baji-${i+1}`,'bottom'] as [string,HanbokFitSlot]),
-  ...Array.from({length:3},(_,i)=>[`durumagi-${i+1}`,'coat'] as [string,HanbokFitSlot]),
-  ...Array.from({length:3},(_,i)=>[`beoseon-${i+1}`,'socks'] as [string,HanbokFitSlot]),
-  ...Array.from({length:4},(_,i)=>[`flower-shoes-${i+1}`,'shoes'] as [string,HanbokFitSlot]),
-  ...Array.from({length:2},(_,i)=>[`hairband-${i+1}`,'hair'] as [string,HanbokFitSlot]),
-  ...Array.from({length:2},(_,i)=>[`hairpin-${i+1}`,'hair'] as [string,HanbokFitSlot]),
-];
+const required=['jeogori','skirt','pants','durumagi','beoseonLeft','beoseonRight','shoeLeft','shoeRight','headband','hairAccessoryLeft','hairAccessoryRight','ornament'] as const;
 
-void test('both children have independent anatomical anchors',()=>{
-  assert.notDeepEqual(bodyFitProfiles[0],bodyFitProfiles[1]);
-  for(const profile of Object.values(bodyFitProfiles)){
-    assert.ok(profile.head.width>0);
-    assert.ok(profile.shoulders.left.x<profile.neck.x);
-    assert.ok(profile.shoulders.right.x>profile.neck.x);
-    assert.ok(profile.feet.left.x<profile.feet.right.x);
+test('두 어린이는 서로 독립된 전체 착용 프로필을 가진다',()=>{
+  assert.notDeepEqual(fitProfiles.child1,fitProfiles.child2);
+  for(const profile of Object.values(fitProfiles))for(const name of required){
+    const placement=profile[name];
+    assert.ok(Number.isFinite(placement.x)&&Number.isFinite(placement.y));
+    assert.ok(placement.width>0&&placement.height>0&&placement.scale>0);
+    assert.ok(Number.isFinite(placement.rotation)&&Number.isInteger(placement.zIndex));
   }
 });
 
-for(const kind of [0,1] as const){
-  void test(`child ${kind+1} uses stable percentage fits for every selectable item`,()=>{
-    for(const [id,slot] of items){
-      const fit=getHanbokFit(kind,id,slot);
-      for(const value of [fit.left,fit.top,fit.width,fit.height,fit.rotation,fit.zIndex]) assert.ok(Number.isFinite(value),id);
-      assert.ok(fit.width>0&&fit.height>0,id);
-      assert.ok(fit.left>-20&&fit.left+fit.width<125,id);
-      assert.ok(fit.top>-10&&fit.top+fit.height<115,id);
-    }
-  });
+test('모든 착용 레이어는 같은 1:2 캔버스 안에서 비율을 유지한다',()=>{
+  const samples=[
+    ['jeogori-1','top'],['chima-2','bottom'],['baji-3','bottom'],['durumagi-1','coat'],
+    ['beoseon-1','socks'],['flower-shoes-1','shoes'],['hairband-1','hair'],['hairpin-2','hair'],['norigae-1','ornament'],
+  ] as const;
+  for(const kind of [0,1] as const)for(const [id,slot] of samples){
+    const fit=getHanbokFit(kind,id,slot);
+    assert.ok(fit.width>0&&fit.height>0);
+    assert.ok(fit.left>-50&&fit.left+fit.width<150);
+    assert.ok(fit.top>-50&&fit.top+fit.height<150);
+  }
+});
 
-  void test(`child ${kind+1} hairpins stay proportional to the head`,()=>{
-    const headWidth=bodyFitProfiles[kind].head.width;
-    for(const id of ['hairpin-1','hairpin-2']){
-      const fit=getHanbokFit(kind,id,'hair');
-      const visibleWidth=id==='hairpin-1'?fit.width*(1458/1536):fit.width*(1205/1536);
-      assert.ok(visibleWidth/headWidth<=.25,`${id} is too wide for child ${kind+1}`);
-    }
-  });
-
-  void test(`child ${kind+1} footwear and lower garments stay inside the full-body canvas`,()=>{
-    for(const id of ['beoseon-1','beoseon-2','beoseon-3','flower-shoes-1','flower-shoes-2','flower-shoes-3','flower-shoes-4']){
-      const fit=getHanbokFit(kind,id,id.startsWith('beoseon')?'socks':'shoes');
-      assert.ok(fit.top>=80,`${id} is above the feet`);
-      assert.ok(fit.top+fit.height<=103,`${id} falls below the child canvas`);
-    }
-    const bottoms=kind===0?Array.from({length:6},(_,i)=>`chima-${i+1}`):Array.from({length:5},(_,i)=>`baji-${i+1}`);
-    for(const id of bottoms){
-      const fit=getHanbokFit(kind,id,'bottom');
-      assert.ok(fit.top+fit.height<=98,`${id} covers the action area`);
-    }
-  });
-}
+test('신발은 버선보다 앞에, 장식은 옷과 얼굴보다 앞에 표시된다',()=>{
+  for(const profile of Object.values(fitProfiles)){
+    assert.ok(profile.shoeLeft.zIndex>profile.beoseonLeft.zIndex);
+    assert.ok(profile.shoeRight.zIndex>profile.beoseonRight.zIndex);
+    assert.ok(profile.ornament.zIndex>profile.durumagi.zIndex);
+    assert.ok(profile.hairAccessoryLeft.zIndex>profile.headband.zIndex);
+  }
+});

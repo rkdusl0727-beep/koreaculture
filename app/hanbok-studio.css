@@ -165,3 +165,38 @@
 
 @media(max-width:1050px){.hb-design{min-height:auto}.hb-stage-panel{min-height:680px}.hb-drop-stage .hb-character{height:520px}}
 @media(max-width:720px){.hb-stage-panel{min-height:0}.hb-drop-stage{min-height:470px}.hb-drop-stage .hb-character{height:min(470px,67dvh)}.hb-message{font-size:16px}.hb-stage-actions{margin-top:24px}}
+
+/* Click-to-wear studio: fixed child-specific layers on one responsive 1:2 canvas. */
+.hb-app button{touch-action:manipulation}
+.hb-design .hb-garments button{position:relative;cursor:pointer;user-select:none;-webkit-user-drag:none}
+.hb-design .hb-garments button.selected{background:#e6f1fb!important;box-shadow:inset 0 0 0 4px #2878b8!important}
+.hb-card-check{position:absolute;z-index:5;right:7px;top:7px;width:31px;height:31px;border:3px solid #fff;border-radius:50%;display:grid;place-items:center;background:#318b61;color:#fff;font-size:20px;line-height:1;box-shadow:0 2px 0 #202936}
+.hb-remove-kind{width:100%;min-height:46px;margin-top:12px;border:3px solid #202936!important;border-radius:14px!important;font-weight:900}
+.hb-accessories button{position:relative;cursor:pointer;touch-action:manipulation}
+.hb-accessories button.active{background:#e6f1fb!important;box-shadow:inset 0 0 0 3px #2878b8!important}
+.hb-drop-stage{cursor:default}
+.hb-drop-stage .hb-character{flex:0 0 auto}
+.hb-layer{pointer-events:none!important;user-select:none}
+.hb-layer.selected:after{content:none!important}
+.hb-base-underlay{z-index:0!important;clip-path:none!important}
+.hb-base-back-hair{z-index:0!important;clip-path:polygon(12% 0,88% 0,88% 27.5%,12% 27.5%)}
+.hb-base-lower-body{z-index:0!important;clip-path:polygon(20% 52%,80% 52%,80% 100%,20% 100%)}
+.hb-character.has-coat .slot-top,.hb-character.has-coat .slot-bottom{visibility:hidden}
+.hb-base-face-neck{z-index:8!important}
+.hb-child-0 .hb-base-face-neck{clip-path:polygon(13% 0,87% 0,87% 27.4%,57% 27.4%,57% 29.5%,43% 29.5%,43% 27.4%,13% 27.4%)}
+.hb-child-1 .hb-base-face-neck{clip-path:polygon(18% 0,81% 0,81% 27.8%,56% 27.8%,56% 29.8%,42% 29.8%,42% 27.8%,18% 27.8%)}
+.hb-base-hand{z-index:10!important}
+.hb-child-0 .hb-base-hand-left{clip-path:polygon(0 48%,12% 48%,12% 58.5%,0 58.5%)}
+.hb-child-0 .hb-base-hand-right{clip-path:polygon(88% 48%,100% 48%,100% 58.5%,88% 58.5%)}
+.hb-child-1 .hb-base-hand-left{clip-path:polygon(0 49%,12% 49%,12% 59%,0 59%)}
+.hb-child-1 .hb-base-hand-right{clip-path:polygon(87% 49%,99% 49%,99% 59%,87% 59%)}
+.hb-base-hair-front{z-index:10!important}
+.hb-child-0 .hb-base-hair-front{clip-path:polygon(34% 10%,66% 10%,66% 20%,34% 20%)}
+.hb-child-1 .hb-base-hair-front{clip-path:polygon(35% 9%,64% 9%,64% 19%,35% 19%)}
+.slot-ornament{z-index:12!important}
+.slot-hair.garment-hairband-1,.slot-hair.garment-hairband-2{z-index:9!important}
+.slot-hair.garment-hairpin-1,.slot-hair.garment-hairpin-2{z-index:11!important}
+.hb-stage-actions{gap:10px;flex-wrap:wrap}
+.hb-stage-actions button{min-width:150px}
+@media(max-width:1050px){.hb-design{grid-template-columns:minmax(280px,.9fr) minmax(390px,1.25fr)}.hb-stage-panel{grid-row:1/3;grid-column:2}.hb-tools{grid-column:1}.hb-garments{max-height:390px}}
+@media(max-width:720px){.hb-design{display:flex}.hb-stage-panel{order:-1}.hb-drop-stage .hb-character{height:min(470px,67dvh)}.hb-garments{max-height:440px}}
