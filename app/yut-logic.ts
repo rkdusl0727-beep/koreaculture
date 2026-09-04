@@ -33,7 +33,13 @@ export function yutResultFromFaces(faces:readonly Face[],rollId?:string):ThrowRe
   const flats=faces.filter(face=>face==='flat'||face==='backdo').length;
   return lockResult(flats===0?'모':flats===1?'도':flats===2?'개':flats===3?'걸':'윷',faces,rollId);
 }
-export function makeYutThrow(random:()=>number=Math.random):ThrowResult{const faces:Face[]=[random()<.5?'backdo':'round',...Array.from({length:3},()=>random()<.5?'flat':'round')];return yutResultFromFaces(faces)}
+const fairResults:readonly ResultName[]=['도','개','걸','윷','모'];
+export function makeYutThrow(random:()=>number=Math.random):ThrowResult{
+  const value=Math.max(0,Math.min(.999999999,random()));
+  if(value<.05)return makeForcedYutThrow('백도');
+  const index=Math.min(fairResults.length-1,Math.floor((value-.05)/.19));
+  return makeForcedYutThrow(fairResults[index]);
+}
 export function makeForcedYutThrow(result:ResultName):ThrowResult{return lockResult(result,fixedFaces[result])}
 
 export function initialPieces():Piece[]{

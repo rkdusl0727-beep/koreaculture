@@ -7,6 +7,7 @@ import {
   fixedFaces,
   initialPieces,
   makeForcedYutThrow,
+  makeYutThrow,
   movablePieceIds,
   moveTarget,
   possibleRoutes,
@@ -24,6 +25,16 @@ const names:ResultName[]=['도','개','걸','윷','모','백도'];
 const onBoard=(id:string,team:Team,node:number,path=Array.from({length:node+1},(_,i)=>i)):Piece=>({id,team,teamId:team,status:'onBoard',currentNode:node,previousPath:path,finishOrder:null,route:'outer'});
 const ready=(id:string,team:Team):Piece=>({id,team,teamId:team,status:'ready',currentNode:null,previousPath:[],finishOrder:null,route:'outer'});
 const finished=(id:string,team:Team,order:number):Piece=>({id,team,teamId:team,status:'finished',currentNode:null,previousPath:[1,2,3],finishOrder:order,route:'outer'});
+
+test('도·개·걸·윷·모는 같은 확률이고 백도만 별도 낮은 확률이다',()=>{
+  const counts=new Map<ResultName,number>(names.map(name=>[name,0]));
+  for(let index=0;index<10000;index++){
+    const roll=makeYutThrow(()=>(index+.5)/10000);
+    counts.set(roll.result,counts.get(roll.result)!+1);
+  }
+  for(const name of ['도','개','걸','윷','모'] as ResultName[])assert.equal(counts.get(name),1900);
+  assert.equal(counts.get('백도'),500);
+});
 
 for(const name of names){
   test(`${name} 결과·윷가락·문장·이동 규칙이 20회 동일하다`,()=>{

@@ -29,8 +29,6 @@
 .board-touch.target.route-outer{border-color:#e7473c;background:#fff0e999}
 .board-touch.target.route-shortcut{border-color:#2878b8;background:#e2f3ff99}
 .phase-rolling .png-result,.phase-moving .png-result,.phase-resolving .png-result{box-shadow:inset 0 0 0 4px #f2bd37}
-.yut-dev-tests{display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap;padding:5px;border:2px dashed #7b5d3d;border-radius:10px;background:#fff8df}
-.yut-dev-tests b{font-size:11px}.yut-dev-tests button{min-width:34px;min-height:30px;border:1px solid #202936;border-radius:7px;background:white;font-weight:900}
 @keyframes yutHintPulse{to{outline-color:#e7473c;transform:scale(1.1)}}
 @keyframes yutMovePulse{to{transform:translateY(-7px)}}
 
@@ -39,7 +37,6 @@
 .png-pawn.selectable,.png-pawn.hinting,.png-pawn.moving{box-shadow:none!important;filter:none!important;animation:none!important;transform:none!important}
 .phase-rolling .png-result,.phase-moving .png-result,.phase-resolving .png-result{box-shadow:none!important}
 .board-touch.target.home{z-index:20}
-.board-touch.target.finish-target{z-index:24!important;border:8px solid #ffd12f!important;background:#fff36dcc!important;animation:yutFinishPulse .55s ease-in-out infinite alternate!important}
+.board-touch.target.finish-target{z-index:24!important;border:8px solid #ffd12f!important;background:#fff36dcc!important;animation:none!important;filter:none!important;box-shadow:none!important}
 .board-touch.finish-target.home span{top:50%;transform:translate(-50%,-50%);padding:7px 12px;background:#e7473c;color:white;border-color:white;font-size:16px}
 .phase-setup .team-station{background:#fffdf5}.phase-setup .team-station .png-pawn.selectable{outline:5px solid #ffd12f;outline-offset:1px}
-@keyframes yutFinishPulse{to{transform:translate(-50%,-50%) scale(1.14);background:#ffe23fff}}
