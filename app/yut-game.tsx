@@ -199,6 +199,7 @@ type GameState={
 };
 type Action=
   |{type:'SETUP_PIECE';pieceId:string}
+  |{type:'PLACE_SETUP_PIECE'}
   |{type:'ROLL_START';roll:ThrowResult}
   |{type:'ROLL_SETTLED';rollId:string}
   |{type:'SELECT_PIECE';pieceId:string}
@@ -218,11 +219,11 @@ const routeLabel=(route:Route)=>route==='outer'?'바깥길':route==='center_to_b
 function startMove(state:GameState,pieceId:string,route:Route):GameState{
   if(!state.currentRoll)return state;
   const resolution=resolveMove(state.pieces,state.turn,pieceId,state.currentRoll,route);
-  return{...state,phase:'moving',selectedPieceId:pieceId,routeOptions:[],pendingMove:{moveId:nextMoveId(),rollId:state.currentRoll.rollId,pieceId,route,resolution},hinting:false,message:`${state.currentRoll.result} 결과로 ${state.currentRoll.moveDirection==='backward'?'뒤로':'앞으로'} ${state.currentRoll.steps}칸 이동해요.`};
+  return{...state,phase:'resolving',pieces:resolution.finalPieces,selectedPieceId:pieceId,routeOptions:[],pendingMove:{moveId:nextMoveId(),rollId:state.currentRoll.rollId,pieceId,route,resolution},hinting:false,message:`${state.currentRoll.result} 결과로 ${state.currentRoll.moveDirection==='backward'?'뒤로':'앞으로'} ${state.currentRoll.steps}칸 이동했어요.`};
 }
 
 function initialGameState(names:Record<Team,string>):GameState{
-  return{names,phase:'ready',pieces:initialPieces(),turn:'red',setupTeam:'red',currentRoll:null,lastRoll:null,selectedPieceId:null,routeOptions:[],pendingMove:null,message:`${names.red} 말을 눌러 출발점에 놓아요.`,bonus:false,winner:null,hinting:false};
+  return{names,phase:'ready',pieces:initialPieces(),turn:'red',setupTeam:'red',currentRoll:null,lastRoll:null,selectedPieceId:null,routeOptions:[],pendingMove:null,message:`${names.red} 말을 누른 뒤 출발·도착 칸을 눌러요.`,bonus:false,winner:null,hinting:false};
 }
 
 function gameReducer(state:GameState,action:Action):GameState{
@@ -231,9 +232,15 @@ function gameReducer(state:GameState,action:Action):GameState{
       if(state.phase!=='ready'||!state.setupTeam)return state;
       const piece=state.pieces.find(item=>item.id===action.pieceId);
       if(!piece||piece.team!==state.setupTeam||piece.position!==WAITING)return state;
-      const pieces=state.pieces.map(item=>item.id===action.pieceId?{...item,position:0,route:'outer' as Route,history:[0]}:item);
+      return{...state,selectedPieceId:action.pieceId,hinting:false,message:'선택한 말을 출발·도착 칸에 놓아 주세요.'};
+    }
+    case 'PLACE_SETUP_PIECE':{
+      if(state.phase!=='ready'||!state.setupTeam||!state.selectedPieceId)return state;
+      const piece=state.pieces.find(item=>item.id===state.selectedPieceId);
+      if(!piece||piece.team!==state.setupTeam||piece.position!==WAITING)return state;
+      const pieces=state.pieces.map(item=>item.id===state.selectedPieceId?{...item,position:0,route:'outer' as Route,history:[0]}:item);
       const nextSetup=state.setupTeam==='red'?'blue':null;
-      return{...state,pieces,turn:nextSetup||'red',setupTeam:nextSetup,message:nextSetup?`${state.names.blue} 말을 눌러 출발점에 놓아요.`:`${state.names.red} 차례예요. 윷을 던져요!`};
+      return{...state,pieces,turn:nextSetup||'red',setupTeam:nextSetup,selectedPieceId:null,message:nextSetup?`${state.names.blue} 말을 누른 뒤 출발·도착 칸을 눌러요.`:`${state.names.red} 차례예요. 윷을 던져요!`};
     }
     case 'ROLL_START':
       if(state.setupTeam||state.winner||(state.phase!=='ready'&&state.phase!=='extraThrow'))return state;
@@ -249,8 +256,7 @@ function gameReducer(state:GameState,action:Action):GameState{
       if(!movablePieceIds(state.pieces,state.turn,state.currentRoll).includes(action.pieceId))return state;
       const piece=state.pieces.find(item=>item.id===action.pieceId)!;
       const routes=possibleRoutes(piece,state.currentRoll);
-      if(routes.length===1)return startMove(state,action.pieceId,routes[0]);
-      return{...state,phase:'choosingPath',selectedPieceId:action.pieceId,routeOptions:routes,hinting:false,message:'두 길 중 원하는 길을 한 번 눌러요.'};
+      return{...state,phase:'choosingPath',selectedPieceId:action.pieceId,routeOptions:routes,hinting:false,message:routes.length===1?'이동할 칸을 한 번 눌러요.':'두 길 중 원하는 이동 칸을 한 번 눌러요.'};
     }
     case 'CHOOSE_ROUTE':
       if(state.phase!=='choosingPath'||!state.selectedPieceId||!state.routeOptions.includes(action.route))return state;
@@ -272,7 +278,7 @@ function gameReducer(state:GameState,action:Action):GameState{
     }
     case 'SHOW_HINT':
       if(state.phase!=='awaitingMove'&&state.phase!=='choosingPath')return state;
-      return{...state,hinting:true,message:state.phase==='choosingPath'?'색이 다른 두 길 중 하나를 눌러보세요!':'반짝이는 말을 눌러보세요!'};
+      return{...state,hinting:true,message:state.phase==='choosingPath'?'테두리가 표시된 이동 칸을 눌러보세요!':'노란 테두리가 표시된 말을 눌러보세요!'};
     case 'CLEAR_HINT':
       return state.hinting?{...state,hinting:false}:state;
     case 'RESET':
@@ -307,13 +313,6 @@ function Game({soundOn,names,onBack,onHome}:{soundOn:boolean;names:Record<Team,s
   },[state.phase,state.currentRoll,soundOn]);
 
   useEffect(()=>{
-    if(state.phase!=='moving'||!state.pendingMove)return;
-    const moveId=state.pendingMove.moveId;
-    const timer=window.setTimeout(()=>dispatch({type:'MOVE_COMMIT',moveId}),520);
-    return()=>window.clearTimeout(timer);
-  },[state.phase,state.pendingMove]);
-
-  useEffect(()=>{
     if(state.phase!=='resolving'||!state.pendingMove)return;
     const moveId=state.pendingMove.moveId;
     const arrived=state.pendingMove.resolution.movingIds.some(id=>state.pendingMove?.resolution.finalPieces.find(piece=>piece.id===id)?.position===FINISHED);
@@ -341,6 +340,7 @@ function Game({soundOn,names,onBack,onHome}:{soundOn:boolean;names:Record<Team,s
   },[state]);
 
   const routeTargets=useMemo<Target[]>(()=>{
+    if(state.setupTeam&&state.phase==='ready'&&state.selectedPieceId)return[{route:'outer',actual:0,display:0,label:'여기에 놓기'}];
     if(state.phase!=='choosingPath'||!state.selectedPieceId||!state.currentRoll)return[];
     const piece=state.pieces.find(item=>item.id===state.selectedPieceId);
     if(!piece)return[];
@@ -373,7 +373,7 @@ function Game({soundOn,names,onBack,onHome}:{soundOn:boolean;names:Record<Team,s
     hintInputLock.current=true;
     dispatch({type:'SHOW_HINT'});
     stopKoreanSpeech();
-    speakKorean(current.phase==='choosingPath'?'색이 다른 두 길 중 하나를 눌러보세요!':'반짝이는 말을 눌러보세요!',soundOn);
+    speakKorean(current.phase==='choosingPath'?'테두리가 표시된 이동 칸을 눌러보세요!':'노란 테두리가 표시된 말을 눌러보세요!',soundOn);
   };
   const reset=()=>{stopKoreanSpeech();spokenRoll.current=null;throwInputLock.current=false;hintInputLock.current=false;dispatch({type:'RESET'});setConfirm(null)};
   const visibleFaces=state.phase==='rolling'?(state.lastRoll?.faces||initialFaces):(state.currentRoll?.faces||state.lastRoll?.faces||initialFaces);
@@ -382,7 +382,7 @@ function Game({soundOn,names,onBack,onHome}:{soundOn:boolean;names:Record<Team,s
   const resultLabel=state.setupTeam?'말 놓기':state.phase==='rolling'?'던지는 중':state.currentRoll?.result||state.lastRoll?.result||'준비';
   const devMode=process.env.NODE_ENV!=='production';
 
-  return <section className={`png-game phase-${state.phase}`}><div className="game-board-column"><div className="board-heading"><h2>전통 윷판</h2><span>출발·도착은 오른쪽 아래예요</span></div><Board pieces={state.pieces} selectable={selectable} targets={routeTargets} hintTargets={hintTargets} hinting={state.hinting} movingIds={movingIds} onPiece={choosePiece} onTarget={target=>dispatch({type:'CHOOSE_ROUTE',route:target.route})}/></div><aside className="game-side"><div className="side-actions"><Button variant="outline" onPointerUp={()=>setShowRules(true)}>규칙 다시 보기</Button><Button variant="outline" disabled={state.hinting||(state.phase!=='awaitingMove'&&state.phase!=='choosingPath')} onPointerUp={showHint}>힌트</Button><Button variant="outline" onPointerUp={()=>setConfirm('restart')}>처음부터</Button></div><div className="turn-box"><span>{state.setupTeam?'출발 준비':'현재 차례'}</span><strong className={state.turn}>{names[state.turn]}</strong><small>직전 결과: {state.lastRoll?.result||'없음'}</small>{state.bonus&&<b>한 번 더!</b>}</div><div className="team-row"><TeamPanel team="red" name={names.red} pieces={state.pieces} active={state.turn==='red'}/><TeamPanel team="blue" name={names.blue} pieces={state.pieces} active={state.turn==='blue'}/></div><YutSticks faces={visibleFaces} rolling={state.phase==='rolling'} onThrow={()=>throwYut()} disabled={!canThrow} label={state.phase==='extraThrow'?'한 번 더 던지기':undefined}/><div className="result-guide"><div className="result-strip">{resultNames.map(name=><span className={state.lastRoll?.result===name?'active':''} key={name}><ResultIcon name={name}/><b>{name}</b></span>)}</div><div className="png-result"><strong>{resultLabel}</strong><p>{state.message}</p></div></div><div className="waiting-area"><div><b>빨강팀 대기</b>{state.pieces.filter(piece=>piece.team==='red'&&piece.position===WAITING).map(piece=><Pawn key={piece.id} team="red" selectable={selectable.includes(piece.id)} hinting={state.hinting&&selectable.includes(piece.id)} onActivate={()=>choosePiece(piece.id)}/>)}</div><div><b>파랑팀 대기</b>{state.pieces.filter(piece=>piece.team==='blue'&&piece.position===WAITING).map(piece=><Pawn key={piece.id} team="blue" selectable={selectable.includes(piece.id)} hinting={state.hinting&&selectable.includes(piece.id)} onActivate={()=>choosePiece(piece.id)}/>)}</div></div>{devMode&&<div className="yut-dev-tests" aria-label="개발용 강제 결과"><b>개발 테스트</b>{resultNames.map(name=><button key={name} type="button" disabled={!canThrow} onPointerUp={()=>throwYut(name)}>{name}</button>)}</div>}</aside>{showRules&&<Rules close={()=>setShowRules(false)}/>} {confirm&&<dialog open className="png-yut-modal"><div className="confirm-card"><h2>{confirm==='home'?'처음 화면으로 갈까요?':'새로 시작할까요?'}</h2><p>지금까지의 놀이는 사라져요.</p><div><Button variant="outline" onPointerUp={()=>setConfirm(null)}>계속 놀기</Button><Button onPointerUp={()=>confirm==='home'?onHome():reset()}>네, 시작해요</Button></div></div></dialog>}{state.winner&&<dialog open className="png-yut-modal"><div className="victory-card"><img src={pawnSrc(state.winner,2)} alt="업힌 윷말"/><h2>{names[state.winner]} 승리!</h2><p>축하해요! 두 개의 말이 모두 도착했어요!</p><div><Button onPointerUp={reset}>같은 팀으로 다시 하기</Button><Button variant="outline" onPointerUp={onBack}>팀 바꾸기</Button><HomeIconButton onClick={onHome}/></div></div></dialog>}<button className="game-home-guard" onPointerUp={()=>setConfirm('home')} aria-label="게임을 끝내고 홈으로"/></section>;
+  return <section className={`png-game phase-${state.phase}`}><div className="game-board-column"><div className="board-heading"><h2>전통 윷판</h2><span>출발·도착은 오른쪽 아래예요</span></div><Board pieces={state.pieces} selectable={selectable} targets={routeTargets} hintTargets={hintTargets} hinting={state.hinting} movingIds={movingIds} onPiece={choosePiece} onTarget={target=>dispatch(state.setupTeam?{type:'PLACE_SETUP_PIECE'}:{type:'CHOOSE_ROUTE',route:target.route})}/></div><aside className="game-side"><div className="side-actions"><Button variant="outline" onPointerUp={()=>setShowRules(true)}>규칙 다시 보기</Button><Button variant="outline" disabled={state.hinting||(state.phase!=='awaitingMove'&&state.phase!=='choosingPath')} onPointerUp={showHint}>힌트</Button><Button variant="outline" onPointerUp={()=>setConfirm('restart')}>처음부터</Button></div><div className="turn-box"><span>{state.setupTeam?'출발 준비':'현재 차례'}</span><strong className={state.turn}>{names[state.turn]}</strong><small>직전 결과: {state.lastRoll?.result||'없음'}</small>{state.bonus&&<b>한 번 더!</b>}</div><div className="team-row"><TeamPanel team="red" name={names.red} pieces={state.pieces} active={state.turn==='red'}/><TeamPanel team="blue" name={names.blue} pieces={state.pieces} active={state.turn==='blue'}/></div><YutSticks faces={visibleFaces} rolling={state.phase==='rolling'} onThrow={()=>throwYut()} disabled={!canThrow} label={state.phase==='extraThrow'?'한 번 더 던지기':undefined}/><div className="result-guide"><div className="result-strip">{resultNames.map(name=><span className={state.lastRoll?.result===name?'active':''} key={name}><ResultIcon name={name}/><b>{name}</b></span>)}</div><div className="png-result"><strong>{resultLabel}</strong><p>{state.message}</p></div></div><div className="waiting-area"><div><b>빨강팀 대기</b>{state.pieces.filter(piece=>piece.team==='red'&&piece.position===WAITING).map(piece=><Pawn key={piece.id} team="red" selectable={selectable.includes(piece.id)} hinting={state.hinting&&selectable.includes(piece.id)} onActivate={()=>choosePiece(piece.id)}/>)}</div><div><b>파랑팀 대기</b>{state.pieces.filter(piece=>piece.team==='blue'&&piece.position===WAITING).map(piece=><Pawn key={piece.id} team="blue" selectable={selectable.includes(piece.id)} hinting={state.hinting&&selectable.includes(piece.id)} onActivate={()=>choosePiece(piece.id)}/>)}</div></div>{devMode&&<div className="yut-dev-tests" aria-label="개발용 강제 결과"><b>개발 테스트</b>{resultNames.map(name=><button key={name} type="button" disabled={!canThrow} onPointerUp={()=>throwYut(name)}>{name}</button>)}</div>}</aside>{showRules&&<Rules close={()=>setShowRules(false)}/>} {confirm&&<dialog open className="png-yut-modal"><div className="confirm-card"><h2>{confirm==='home'?'처음 화면으로 갈까요?':'새로 시작할까요?'}</h2><p>지금까지의 놀이는 사라져요.</p><div><Button variant="outline" onPointerUp={()=>setConfirm(null)}>계속 놀기</Button><Button onPointerUp={()=>confirm==='home'?onHome():reset()}>네, 시작해요</Button></div></div></dialog>}{state.winner&&<dialog open className="png-yut-modal"><div className="victory-card"><img src={pawnSrc(state.winner,2)} alt="업힌 윷말"/><h2>{names[state.winner]} 승리!</h2><p>축하해요! 두 개의 말이 모두 도착했어요!</p><div><Button onPointerUp={reset}>같은 팀으로 다시 하기</Button><Button variant="outline" onPointerUp={onBack}>팀 바꾸기</Button><HomeIconButton onClick={onHome}/></div></div></dialog>}<button className="game-home-guard" onPointerUp={()=>setConfirm('home')} aria-label="게임을 끝내고 홈으로"/></section>;
 }
 
 export default function YutGame({home,soundOn,toggleSound}:{home:()=>void;soundOn:boolean;toggleSound:()=>void}){

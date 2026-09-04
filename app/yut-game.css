@@ -33,3 +33,9 @@
 .yut-dev-tests b{font-size:11px}.yut-dev-tests button{min-width:34px;min-height:30px;border:1px solid #202936;border-radius:7px;background:white;font-weight:900}
 @keyframes yutHintPulse{to{outline-color:#e7473c;transform:scale(1.1)}}
 @keyframes yutMovePulse{to{transform:translateY(-7px)}}
+
+/* One-tap board controls use crisp, motion-free feedback. */
+.board-touch.target,.board-touch.hint-destination,.board-touch.target.route-outer,.board-touch.target.route-shortcut{box-shadow:none!important;filter:none!important;animation:none!important}
+.png-pawn.selectable,.png-pawn.hinting,.png-pawn.moving{box-shadow:none!important;filter:none!important;animation:none!important;transform:none!important}
+.phase-rolling .png-result,.phase-moving .png-result,.phase-resolving .png-result{box-shadow:none!important}
+.board-touch.target.home{z-index:20}
