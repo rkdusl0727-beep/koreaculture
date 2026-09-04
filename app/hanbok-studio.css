@@ -126,3 +126,11 @@
 .slot-top.garment-jeogori-4{left:-1.2%;top:16.6%;width:104.4%;height:47.5%}
 .slot-top.garment-jeogori-5{left:-1%;top:17.3%;width:103.1%;height:48.4%}
 .slot-top.garment-jeogori-6{left:-5.2%;top:20.6%;width:106.1%;height:43.5%}
+
+/* Character-specific fit profiles: every worn item snaps to this shared 1:2 canvas. */
+.hb-layer{left:var(--fit-left)!important;top:var(--fit-top)!important;width:var(--fit-width)!important;height:var(--fit-height)!important;transform:rotate(var(--fit-rotation))!important;transform-origin:center center!important}
+.hb-layer img{width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important}
+.hb-layer .hb-tint{-webkit-mask-position:center!important;mask-position:center!important;-webkit-mask-size:contain!important;mask-size:contain!important}
+.slot-top[class*="garment-jeogori-"] img,.slot-coat img{object-fit:contain!important}
+.slot-top[class*="garment-jeogori-"] .hb-tint,.slot-coat .hb-tint{-webkit-mask-size:contain!important;mask-size:contain!important}
+.slot-hair img{object-fit:contain!important}
