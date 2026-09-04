@@ -4,6 +4,7 @@ import {useEffect,useMemo,useReducer,useRef,useState,type CSSProperties} from 'r
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {
+  CAPTURE_ANNOUNCEMENT,
   FINISHED,
   WAITING,
   finishedCount,
@@ -230,6 +231,7 @@ type GameState={
   bonus:boolean;
   winner:Team|null;
   hinting:boolean;
+  captureAnnouncementId:string|null;
 };
 type Action=
   |{type:'START_WITH_PIECE';pieceId:string}
@@ -277,7 +279,7 @@ function beginManualMove(state:GameState,pieceId:string,route:Route):GameState{
 }
 
 function initialGameState(names:Record<Team,string>):GameState{
-  return{names,phase:'setup',pieces:initialPieces(),currentTeam:null,startingTeam:null,currentRoll:null,lastRoll:null,selectedPieceId:null,routeOptions:[],pendingMove:null,message:'먼저 시작할 팀의 말을 출발선에 놓아 보세요!',bonus:false,winner:null,hinting:false};
+  return{names,phase:'setup',pieces:initialPieces(),currentTeam:null,startingTeam:null,currentRoll:null,lastRoll:null,selectedPieceId:null,routeOptions:[],pendingMove:null,message:'먼저 시작할 팀의 말을 출발선에 놓아 보세요!',bonus:false,winner:null,hinting:false,captureAnnouncementId:null};
 }
 
 function gameReducer(state:GameState,action:Action):GameState{
@@ -294,7 +296,7 @@ function gameReducer(state:GameState,action:Action):GameState{
     }
     case 'ROLL_START':
       if(!state.currentTeam||state.winner||(state.phase!=='ready'&&state.phase!=='extraThrow'))return state;
-      return{...state,phase:'rolling',currentRoll:action.roll,selectedPieceId:null,routeOptions:[],pendingMove:null,bonus:false,hinting:false,message:'윷을 던지고 있어요!'};
+      return{...state,phase:'rolling',currentRoll:action.roll,selectedPieceId:null,routeOptions:[],pendingMove:null,bonus:false,hinting:false,captureAnnouncementId:null,message:'윷을 던지고 있어요!'};
     case 'ROLL_SETTLED':{
       if(state.phase!=='rolling'||state.currentRoll?.rollId!==action.rollId)return state;
       if(!state.currentTeam)return state;
@@ -323,7 +325,7 @@ function gameReducer(state:GameState,action:Action):GameState{
     case 'RESOLVE_MOVE':{
       if(state.phase!=='resolving'||state.pendingMove?.moveId!==action.moveId)return state;
       const solved=state.pendingMove.resolution;
-      if(solved.extraThrow)return{...state,phase:'extraThrow',currentRoll:null,pendingMove:null,selectedPieceId:null,bonus:true,message:solved.caughtIds.length?'상대 말을 잡았어요! 한 번 더 던져요.':'한 번 더! 다시 윷을 던져요.'};
+      if(solved.extraThrow)return{...state,phase:'extraThrow',currentRoll:null,pendingMove:null,selectedPieceId:null,bonus:true,captureAnnouncementId:solved.caughtIds.length?state.pendingMove.moveId:null,message:solved.caughtIds.length?CAPTURE_ANNOUNCEMENT:'한 번 더! 다시 윷을 던져요.'};
       return{...state,phase:'turnEnd',currentRoll:null,pendingMove:null,selectedPieceId:null,message:'이동이 끝났어요. 다음 팀 차례예요.'};
     }
     case 'NEXT_TURN':{
@@ -348,6 +350,7 @@ function Game({soundOn,names,onBack,onHome}:{soundOn:boolean;names:Record<Team,s
   const stateRef=useRef(state);
   const spokenRoll=useRef<string|null>(null);
   const celebratedWinner=useRef<Team|null>(null);
+  const spokenCapture=useRef<string|null>(null);
   const throwInputLock=useRef(false);
   const hintInputLock=useRef(false);
   const[showRules,setShowRules]=useState(false);
@@ -400,6 +403,13 @@ function Game({soundOn,names,onBack,onHome}:{soundOn:boolean;names:Record<Team,s
   },[state.winner,soundOn]);
 
   useEffect(()=>{
+    if(state.phase!=='extraThrow'||!state.captureAnnouncementId||spokenCapture.current===state.captureAnnouncementId)return;
+    spokenCapture.current=state.captureAnnouncementId;
+    stopKoreanSpeech();
+    speakKorean(CAPTURE_ANNOUNCEMENT,soundOn);
+  },[state.phase,state.captureAnnouncementId,soundOn]);
+
+  useEffect(()=>{
     if(!state.hinting)return;
     const timer=window.setTimeout(()=>dispatch({type:'CLEAR_HINT'}),2000);
     return()=>window.clearTimeout(timer);
@@ -449,7 +459,11 @@ function Game({soundOn,names,onBack,onHome}:{soundOn:boolean;names:Record<Team,s
     dispatch({type:'ROLL_START',roll});
     playThrowSound(soundOn);
   };
-  const choosePiece=(pieceId:string)=>dispatch(stateRef.current.pieces.find(piece=>piece.id===pieceId)?.status==='waiting'?{type:'START_WITH_PIECE',pieceId}:{type:'SELECT_PIECE',pieceId});
+  const choosePiece=(pieceId:string)=>{
+    const current=stateRef.current;
+    const waiting=current.pieces.find(piece=>piece.id===pieceId)?.status==='waiting';
+    dispatch(waiting&&current.phase!=='awaitingMove'?{type:'START_WITH_PIECE',pieceId}:{type:'SELECT_PIECE',pieceId});
+  };
   const showHint=()=>{
     const current=stateRef.current;
     if(hintInputLock.current||(current.phase!=='awaitingMove'&&current.phase!=='choosingPath'&&current.phase!=='stepping'))return;
@@ -458,7 +472,7 @@ function Game({soundOn,names,onBack,onHome}:{soundOn:boolean;names:Record<Team,s
     stopKoreanSpeech();
     speakKorean(current.phase==='awaitingMove'?'노란 테두리가 표시된 말을 눌러보세요!':'테두리가 표시된 다음 이동 칸을 눌러보세요!',soundOn);
   };
-  const reset=()=>{stopKoreanSpeech();spokenRoll.current=null;celebratedWinner.current=null;throwInputLock.current=false;hintInputLock.current=false;dispatch({type:'RESET'});setConfirm(null)};
+  const reset=()=>{stopKoreanSpeech();spokenRoll.current=null;spokenCapture.current=null;celebratedWinner.current=null;throwInputLock.current=false;hintInputLock.current=false;dispatch({type:'RESET'});setConfirm(null)};
   const visibleFaces=state.phase==='rolling'?(state.lastRoll?.faces||initialFaces):(state.currentRoll?.faces||state.lastRoll?.faces||initialFaces);
   const canThrow=!!state.currentTeam&&(state.phase==='ready'||state.phase==='extraThrow')&&!state.winner&&state.pieces.some(piece=>piece.team===state.currentTeam&&(piece.status==='ready'||piece.status==='onBoard'));
   const movingIds=state.pendingMove?.resolution.movingIds||[];

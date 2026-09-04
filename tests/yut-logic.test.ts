@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  CAPTURE_ANNOUNCEMENT,
   FINISHED,
   canFinish,
   finishedCount,
@@ -35,6 +36,16 @@ test('도·개·걸·윷·모는 같은 확률이고 백도만 별도 낮은 확
   }
   for(const name of ['도','개','걸','윷','모'] as ResultName[])assert.equal(counts.get(name),1900);
   assert.equal(counts.get('백도'),500);
+});
+
+test('무작위 던지기 10000회의 화면 결과·윷가락·음성 문장이 모두 같은 결과에서 나온다',()=>{
+  for(let index=0;index<10000;index++){
+    const roll=makeYutThrow(()=>(index+.5)/10000);
+    const visible=yutResultFromFaces(roll.faces);
+    assert.equal(visible.result,roll.result);
+    assert.equal(roll.sentence,resultInfo[visible.result].sentence);
+    assert.equal(roll.steps,resultInfo[visible.result].steps);
+  }
 });
 
 for(const name of names){
@@ -134,9 +145,20 @@ test('윷판 위 백도는 실제 지나온 경로를 따라 한 칸 뒤로 간�
   assert.deepEqual(solved.finalPieces[0].previousPath,[1,2,3,4,5,6]);
 });
 
-test('waiting 말과 finished 말은 어떤 결과에서도 이동 대상이 아니다',()=>{
+test('waiting 말은 앞쪽 결과에서만 출발할 수 있고 finished 말은 이동할 수 없다',()=>{
   const pieces=[initialPieces()[0],finished('red-2','red',1)];
-  for(const name of names)assert.deepEqual(movablePieceIds(pieces,'red',makeForcedYutThrow(name)),[]);
+  assert.deepEqual(movablePieceIds(pieces,'red',makeForcedYutThrow('백도')),[]);
+  for(const name of ['도','개','걸','윷','모'] as ResultName[])assert.deepEqual(movablePieceIds(pieces,'red',makeForcedYutThrow(name)),['red-1']);
+});
+
+test('첫 번째 말이 도착하지 않아도 기다리는 두 번째 말을 결과만큼 바로 출발시킬 수 있다',()=>{
+  const pieces=[onBoard('red-1','red',8),initialPieces().find(piece=>piece.id==='red-2')!];
+  const roll=makeForcedYutThrow('개');
+  assert.deepEqual(movablePieceIds(pieces,'red',roll),['red-1','red-2']);
+  const solved=resolveMove(pieces,'red','red-2',roll,'outer');
+  assert.equal(solved.finalPieces.find(piece=>piece.id==='red-1')?.currentNode,8);
+  assert.equal(solved.finalPieces.find(piece=>piece.id==='red-2')?.status,'onBoard');
+  assert.equal(solved.finalPieces.find(piece=>piece.id==='red-2')?.currentNode,2);
 });
 
 test('같은 팀 말은 업혀서 함께 이동한다',()=>{
@@ -153,6 +175,7 @@ test('상대 말을 잡으면 상대 말은 finished가 아닌 ready로 돌아�
   assert.equal(caught.status,'ready');
   assert.equal(caught.currentNode,null);
   assert.equal(solved.extraThrow,true);
+  assert.equal(CAPTURE_ANNOUNCEMENT,'상대방 말을 잡았어요. 한번 더 던지세요.');
 });
 
 test('갈림길은 두 경로만 제시하고 선택한 길을 한 번 계산한다',()=>{

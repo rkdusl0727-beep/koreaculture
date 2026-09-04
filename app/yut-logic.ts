@@ -19,6 +19,8 @@ export const resultInfo:Record<ResultName,Omit<ThrowResult,'rollId'|'faces'>>={
   '백도':{result:'백도',steps:1,moveDirection:'backward',extraThrow:false,sentence:'백도! 한 칸 뒤로 가요.'},
 };
 
+export const CAPTURE_ANNOUNCEMENT='상대방 말을 잡았어요. 한번 더 던지세요.';
+
 export const fixedFaces:Record<ResultName,readonly Face[]>={
   '도':['round','flat','round','round'],'개':['round','flat','flat','round'],'걸':['round','flat','flat','flat'],
   '윷':['backdo','flat','flat','flat'],'모':['round','round','round','round'],'백도':['backdo','round','round','round'],
@@ -86,7 +88,7 @@ export function movePath(piece:Piece,result:ThrowResult,route:Route):number[]{
 }
 export function moveTarget(piece:Piece,result:ThrowResult,route:Route){const path=movePath(piece,result,route);return path[path.length-1]??piece.currentNode??WAITING}
 export function movablePieceIds(pieces:Piece[],team:Team,result:ThrowResult):string[]{
-  return pieces.filter(piece=>piece.team===team&&piece.status!=='waiting'&&piece.status!=='finished'&&(result.moveDirection==='forward'||piece.status==='ready'||piece.currentNode!==null)).map(piece=>piece.id);
+  return pieces.filter(piece=>piece.team===team&&piece.status!=='finished'&&(result.moveDirection==='forward'||piece.status==='ready'||piece.currentNode!==null)).map(piece=>piece.id);
 }
 export function canFinish(piece:Piece,result:ThrowResult,route:Route=piece.route){return moveTarget(piece,result,route)===FINISHED}
 export function finishOptions(pieces:Piece[],team:Team,result:ThrowResult):Array<{pieceId:string;route:Route}>{
@@ -100,7 +102,7 @@ export function winnerFor(pieces:Piece[],team:Team,totalPieces=2):Team|null{retu
 
 export function resolveMove(pieces:Piece[],team:Team,selectedId:string,result:ThrowResult,route:Route){
   const chosen=pieces.find(piece=>piece.id===selectedId);
-  if(!chosen||chosen.team!==team||chosen.status==='waiting'||chosen.status==='finished')throw new Error('선택한 윷말을 이동할 수 없습니다.');
+  if(!chosen||chosen.team!==team||chosen.status==='finished'||(chosen.status==='waiting'&&result.moveDirection==='backward'))throw new Error('선택한 윷말을 이동할 수 없습니다.');
   const stacked=chosen.status==='onBoard'?pieces.filter(piece=>piece.team===team&&piece.status==='onBoard'&&piece.currentNode===chosen.currentNode).map(piece=>piece.id):[];
   const movingIds=stacked.length?stacked:[selectedId];
   const path=movePath(chosen,result,route);
