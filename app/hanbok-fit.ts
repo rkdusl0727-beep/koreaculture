@@ -80,12 +80,12 @@ const geometry:Record<string,ImageGeometry>={
 export const fitProfiles:Record<'child1'|'child2',CharacterFitProfile>={
   child1:{
     jeogori:{x:6,y:28.2,width:88,height:34,scale:1,rotation:0,zIndex:3},skirt:{x:17,y:49.5,width:66,height:42,scale:1,rotation:0,zIndex:2},pants:{x:18,y:50,width:64,height:42,scale:1,rotation:0,zIndex:2},durumagi:{x:1,y:24,width:98,height:66,scale:1,rotation:0,zIndex:4},
-    beoseonLeft:{x:31,y:86,width:18,height:11,scale:1,rotation:0,zIndex:1},beoseonRight:{x:51,y:86,width:18,height:11,scale:1,rotation:0,zIndex:1},shoeLeft:{x:34,y:92.5,width:15,height:5.5,scale:1,rotation:0,zIndex:5},shoeRight:{x:51,y:92.5,width:15,height:5.5,scale:1,rotation:0,zIndex:5},
+    beoseonLeft:{x:27,y:84.8,width:20,height:12.5,scale:1,rotation:0,zIndex:1},beoseonRight:{x:54,y:84.8,width:20,height:12.5,scale:1,rotation:0,zIndex:1},shoeLeft:{x:26,y:87.5,width:20,height:12.3,scale:1,rotation:0,zIndex:5},shoeRight:{x:55,y:87.5,width:20,height:12.3,scale:1,rotation:0,zIndex:5},
     headband:{x:29,y:6.4,width:42,height:13,scale:1,rotation:0,zIndex:9},hairAccessoryLeft:{x:21.5,y:7.8,width:11.8,height:9,scale:1,rotation:8,zIndex:11},hairAccessoryRight:{x:68,y:7.4,width:11.5,height:9,scale:1,rotation:-8,zIndex:11},ornament:{x:51,y:39,width:27,height:28,scale:1,rotation:0,zIndex:12},
   },
   child2:{
     jeogori:{x:2,y:27.5,width:94,height:35,scale:1,rotation:0,zIndex:3},skirt:{x:18,y:50,width:64,height:42,scale:1,rotation:0,zIndex:2},pants:{x:17,y:50,width:64,height:42,scale:1,rotation:0,zIndex:2},durumagi:{x:3,y:24.5,width:92,height:65,scale:1,rotation:0,zIndex:4},
-    beoseonLeft:{x:31,y:86.5,width:17,height:10.5,scale:1,rotation:0,zIndex:1},beoseonRight:{x:50,y:86.5,width:17,height:10.5,scale:1,rotation:0,zIndex:1},shoeLeft:{x:35,y:92.5,width:14,height:5.3,scale:1,rotation:0,zIndex:5},shoeRight:{x:51,y:92.5,width:14,height:5.3,scale:1,rotation:0,zIndex:5},
+    beoseonLeft:{x:24,y:85,width:20,height:12.3,scale:1,rotation:0,zIndex:1},beoseonRight:{x:52,y:85,width:20,height:12.3,scale:1,rotation:0,zIndex:1},shoeLeft:{x:24,y:87.8,width:20,height:12,scale:1,rotation:0,zIndex:5},shoeRight:{x:53,y:87.8,width:20,height:12,scale:1,rotation:0,zIndex:5},
     headband:{x:30,y:5.5,width:38,height:12.5,scale:1,rotation:0,zIndex:9},hairAccessoryLeft:{x:28,y:7.6,width:10.7,height:8.5,scale:1,rotation:8,zIndex:11},hairAccessoryRight:{x:63.5,y:7.2,width:10.5,height:8.5,scale:1,rotation:-8,zIndex:11},ornament:{x:50,y:40,width:25,height:26,scale:1,rotation:0,zIndex:12},
   },
 };

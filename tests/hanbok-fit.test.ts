@@ -35,3 +35,14 @@ test('신발은 버선보다 앞에, 장식은 옷과 얼굴보다 앞에 표시
     assert.ok(profile.hairAccessoryLeft.zIndex>profile.headband.zIndex);
   }
 });
+
+test('버선과 꽃신은 양쪽 발 중심에 맞고 캐릭터 캔버스 밖으로 내려가지 않는다',()=>{
+  for(const [key,profile] of Object.entries(fitProfiles)){
+    const child=key==='child1'?0:1;
+    const feet=child===0?{left:37,right:64}:{left:34,right:62};
+    for(const [placement,center] of [[profile.beoseonLeft,feet.left],[profile.beoseonRight,feet.right],[profile.shoeLeft,feet.left],[profile.shoeRight,feet.right]] as const){
+      assert.ok(placement.x<center&&placement.x+placement.width>center);
+      assert.ok(placement.y+placement.height<=100);
+    }
+  }
+});

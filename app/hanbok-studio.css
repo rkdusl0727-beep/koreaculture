@@ -190,6 +190,9 @@
 .hb-child-0 .hb-base-hand-right{clip-path:polygon(88% 48%,100% 48%,100% 58.5%,88% 58.5%)}
 .hb-child-1 .hb-base-hand-left{clip-path:polygon(0 49%,12% 49%,12% 59%,0 59%)}
 .hb-child-1 .hb-base-hand-right{clip-path:polygon(87% 49%,99% 49%,99% 59%,87% 59%)}
+.hb-child-0 .hb-base-hand{transform:translateY(2.5%)}
+.hb-child-1 .hb-base-hand{transform:translateY(2.2%)}
+.hb-design .hb-tint{display:none!important}
 .hb-base-hair-front{z-index:10!important}
 .hb-child-0 .hb-base-hair-front{clip-path:polygon(34% 10%,66% 10%,66% 20%,34% 20%)}
 .hb-child-1 .hb-base-hair-front{clip-path:polygon(35% 9%,64% 9%,64% 19%,35% 19%)}
