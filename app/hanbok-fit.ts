@@ -60,6 +60,9 @@ const geometry:Record<string,ImageGeometry>={
   'durumagi-1':{width:1024,height:1536,alpha:{x:24,y:32,width:978,height:1504}},
   'durumagi-2':{width:1024,height:1536,alpha:{x:43,y:78,width:939,height:1416}},
   'durumagi-3':{width:1024,height:1536,alpha:{x:27,y:0,width:968,height:1496}},
+  'durumagi-new-1':{width:1024,height:1536,alpha:{x:24,y:32,width:978,height:1504}},
+  'durumagi-new-2':{width:1024,height:1536,alpha:{x:43,y:78,width:939,height:1416}},
+  'durumagi-new-3':{width:1024,height:1536,alpha:{x:27,y:0,width:968,height:1496}},
   // The studio uses the paired, front-facing beoseon cutouts. Their canvas and
   // visible bounds differ from the catalog image, so they need their own crop.
   'beoseon-1':{width:600,height:300,alpha:{x:68,y:32,width:452,height:235}},

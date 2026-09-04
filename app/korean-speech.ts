@@ -3,6 +3,7 @@
 let speechRequest=0;
 let voiceTimer:number|undefined;
 let speakTimer:number|undefined;
+let activePronunciation:HTMLAudioElement|undefined;
 export const NORMAL_SPEECH_RATE=1;
 
 export function setNormalAudioSpeed(audio:HTMLAudioElement){
@@ -50,10 +51,11 @@ export function stopKoreanSpeech(){
   if(speakTimer!==undefined)window.clearTimeout(speakTimer);
   voiceTimer=undefined;
   speakTimer=undefined;
+  if(activePronunciation){activePronunciation.pause();activePronunciation.currentTime=0;activePronunciation=undefined}
   if(typeof window!=='undefined'&&'speechSynthesis'in window)window.speechSynthesis.cancel();
 }
 
-export function speakKorean(text:string,enabled:boolean){
+export function speakKorean(text:string,enabled:boolean,rate=NORMAL_SPEECH_RATE){
   if(typeof window==='undefined'||!('speechSynthesis'in window))return;
   const synth=window.speechSynthesis;
   const request=++speechRequest;
@@ -70,7 +72,7 @@ export function speakKorean(text:string,enabled:boolean){
     const utterance=new SpeechSynthesisUtterance(normalizeKoreanSpeechText(text));
     utterance.lang='ko-KR';
     if(voice)utterance.voice=voice;
-    utterance.rate=NORMAL_SPEECH_RATE;
+    utterance.rate=rate;
     utterance.pitch=1;
     utterance.volume=1;
     speakTimer=window.setTimeout(()=>{
@@ -85,4 +87,14 @@ export function speakKorean(text:string,enabled:boolean){
   const voicesReady=()=>{if(play()){synth.removeEventListener('voiceschanged',voicesReady);if(voiceTimer!==undefined)window.clearTimeout(voiceTimer);voiceTimer=undefined}};
   synth.addEventListener('voiceschanged',voicesReady);
   voiceTimer=window.setTimeout(()=>{synth.removeEventListener('voiceschanged',voicesReady);voiceTimer=undefined;play(true)},350);
+}
+
+export function playFootPronunciation(enabled:boolean){
+  stopKoreanSpeech();
+  if(!enabled||typeof window==='undefined')return;
+  const audio=new Audio('/audio/bal.wav');
+  activePronunciation=audio;
+  audio.playbackRate=.86;
+  audio.onended=()=>{if(activePronunciation===audio)activePronunciation=undefined};
+  void audio.play().catch(()=>{if(activePronunciation===audio)activePronunciation=undefined;speakKorean('발이에요. 발로 걸어요.',true,.86)});
 }
