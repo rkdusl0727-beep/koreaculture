@@ -45,11 +45,11 @@ export function makeForcedYutThrow(result:ResultName):ThrowResult{return lockRes
 export function initialPieces():Piece[]{
   return(['red-1','red-2','blue-1','blue-2'] as const).map(id=>{const team=id.startsWith('red')?'red':'blue';return{id,team,teamId:team,status:'waiting',currentNode:null,previousPath:[],finishOrder:null,route:'outer'}});
 }
-export function placeStartingPiece(pieces:Piece[],pieceId:string,startingTeam:Team|null):{pieces:Piece[];currentTeam:Team;allReady:boolean}{
+export function placeStartingPiece(pieces:Piece[],pieceId:string,startingTeam:Team|null):{pieces:Piece[];currentTeam:Team}{
   const chosen=pieces.find(piece=>piece.id===pieceId&&piece.status==='waiting');
   if(!chosen)throw new Error('출발점에 놓을 말을 찾을 수 없습니다.');
   const nextPieces=pieces.map(piece=>piece.id===pieceId?{...piece,status:'ready' as const,currentNode:null,previousPath:[],finishOrder:null,route:'outer' as Route}:piece);
-  return{currentTeam:startingTeam??chosen.teamId,pieces:nextPieces,allReady:nextPieces.every(piece=>piece.status!=='waiting')};
+  return{currentTeam:startingTeam??chosen.teamId,pieces:nextPieces};
 }
 
 const outerAfter=(position:number|null)=>(position===null||position===0)?Array.from({length:19},(_,i)=>i+1).concat(FINISHED):position>=1&&position<=19?Array.from({length:19-position},(_,i)=>position+i+1).concat(FINISHED):[FINISHED];

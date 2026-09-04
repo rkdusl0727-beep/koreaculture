@@ -64,7 +64,6 @@ for(const team of ['red','blue'] as Team[]){
     const initial=initialPieces();
     const placed=placeStartingPiece(initial,`${team}-1`,null);
     assert.equal(placed.currentTeam,team);
-    assert.equal(placed.allReady,false);
     assert.equal(placed.pieces.find(piece=>piece.id===`${team}-1`)?.status,'ready');
     assert.equal(placed.pieces.filter(piece=>piece.status==='waiting').length,3);
     assert.ok(initial.every(piece=>piece.status==='waiting'),'원본 상태를 바꾸지 않는다');
@@ -77,22 +76,13 @@ test('두 번째 말도 직접 놓고 첫 번째 말의 팀이 선공으로 유�
   assert.equal(second.currentTeam,'blue');
   assert.equal(second.pieces.find(piece=>piece.id==='blue-1')?.status,'ready');
   assert.equal(second.pieces.find(piece=>piece.id==='red-1')?.status,'ready');
-  assert.equal(second.allReady,false);
 });
 
-test('네 말을 모두 하나씩 놓은 뒤에만 출발 준비가 완료된다',()=>{
-  let pieces=initialPieces();
-  let startingTeam:Team|null=null;
-  let allReady=false;
-  for(const pieceId of ['red-2','blue-1','red-1','blue-2']){
-    const placed=placeStartingPiece(pieces,pieceId,startingTeam);
-    pieces=placed.pieces;
-    startingTeam=placed.currentTeam;
-    allReady=placed.allReady;
-  }
-  assert.equal(startingTeam,'red');
-  assert.equal(allReady,true);
-  assert.ok(pieces.every(piece=>piece.status==='ready'));
+test('말 한 개만 놓아도 그 말은 바로 출발 준비 상태가 된다',()=>{
+  const placed=placeStartingPiece(initialPieces(),'red-2',null);
+  assert.equal(placed.currentTeam,'red');
+  assert.equal(placed.pieces.filter(piece=>piece.status==='ready').length,1);
+  assert.equal(placed.pieces.filter(piece=>piece.status==='waiting').length,3);
 });
 
 test('ready 말은 첫 번째 이동 칸 밖의 출발 대기 상태에서 앞으로 이동한다',()=>{
