@@ -11,7 +11,7 @@ import {
   movablePieceIds,
   moveTarget,
   possibleRoutes,
-  prepareStartingTeam,
+  placeStartingPiece,
   resolveMove,
   resultInfo,
   winnerFor,
@@ -60,14 +60,40 @@ test('새 게임은 어느 팀도 선공으로 고정하지 않고 모든 말을
 });
 
 for(const team of ['red','blue'] as Team[]){
-  test(`${team} 말을 먼저 놓으면 해당 팀이 선공이고 양 팀 말은 ready가 된다`,()=>{
+  test(`${team} 말을 먼저 놓으면 해당 팀이 선공이고 선택한 말만 ready가 된다`,()=>{
     const initial=initialPieces();
-    const prepared=prepareStartingTeam(initial,`${team}-1`);
-    assert.equal(prepared.currentTeam,team);
-    assert.ok(prepared.pieces.every(piece=>piece.status==='ready'&&piece.currentNode===null));
+    const placed=placeStartingPiece(initial,`${team}-1`,null);
+    assert.equal(placed.currentTeam,team);
+    assert.equal(placed.allReady,false);
+    assert.equal(placed.pieces.find(piece=>piece.id===`${team}-1`)?.status,'ready');
+    assert.equal(placed.pieces.filter(piece=>piece.status==='waiting').length,3);
     assert.ok(initial.every(piece=>piece.status==='waiting'),'원본 상태를 바꾸지 않는다');
   });
 }
+
+test('두 번째 말도 직접 놓고 첫 번째 말의 팀이 선공으로 유지된다',()=>{
+  const first=placeStartingPiece(initialPieces(),'blue-1',null);
+  const second=placeStartingPiece(first.pieces,'red-1',first.currentTeam);
+  assert.equal(second.currentTeam,'blue');
+  assert.equal(second.pieces.find(piece=>piece.id==='blue-1')?.status,'ready');
+  assert.equal(second.pieces.find(piece=>piece.id==='red-1')?.status,'ready');
+  assert.equal(second.allReady,false);
+});
+
+test('네 말을 모두 하나씩 놓은 뒤에만 출발 준비가 완료된다',()=>{
+  let pieces=initialPieces();
+  let startingTeam:Team|null=null;
+  let allReady=false;
+  for(const pieceId of ['red-2','blue-1','red-1','blue-2']){
+    const placed=placeStartingPiece(pieces,pieceId,startingTeam);
+    pieces=placed.pieces;
+    startingTeam=placed.currentTeam;
+    allReady=placed.allReady;
+  }
+  assert.equal(startingTeam,'red');
+  assert.equal(allReady,true);
+  assert.ok(pieces.every(piece=>piece.status==='ready'));
+});
 
 test('ready 말은 첫 번째 이동 칸 밖의 출발 대기 상태에서 앞으로 이동한다',()=>{
   const piece=ready('red-1','red');
@@ -155,8 +181,8 @@ for(const team of ['red','blue'] as Team[]){
 }
 
 test('완료된 상태를 다시 계산해도 선공과 도착 순서 데이터는 바뀌지 않는다',()=>{
-  const prepared=prepareStartingTeam(initialPieces(),'blue-1');
-  const snapshot=structuredClone(prepared);
-  assert.deepEqual(prepared,snapshot);
-  assert.equal(prepared.currentTeam,'blue');
+  const placed=placeStartingPiece(initialPieces(),'blue-1',null);
+  const snapshot=structuredClone(placed);
+  assert.deepEqual(placed,snapshot);
+  assert.equal(placed.currentTeam,'blue');
 });

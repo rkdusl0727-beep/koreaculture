@@ -45,10 +45,11 @@ export function makeForcedYutThrow(result:ResultName):ThrowResult{return lockRes
 export function initialPieces():Piece[]{
   return(['red-1','red-2','blue-1','blue-2'] as const).map(id=>{const team=id.startsWith('red')?'red':'blue';return{id,team,teamId:team,status:'waiting',currentNode:null,previousPath:[],finishOrder:null,route:'outer'}});
 }
-export function prepareStartingTeam(pieces:Piece[],pieceId:string):{pieces:Piece[];currentTeam:Team}{
+export function placeStartingPiece(pieces:Piece[],pieceId:string,startingTeam:Team|null):{pieces:Piece[];currentTeam:Team;allReady:boolean}{
   const chosen=pieces.find(piece=>piece.id===pieceId&&piece.status==='waiting');
-  if(!chosen)throw new Error('먼저 시작할 말을 찾을 수 없습니다.');
-  return{currentTeam:chosen.teamId,pieces:pieces.map(piece=>piece.status==='waiting'?{...piece,status:'ready',currentNode:null,previousPath:[],finishOrder:null,route:'outer'}:piece)};
+  if(!chosen)throw new Error('출발점에 놓을 말을 찾을 수 없습니다.');
+  const nextPieces=pieces.map(piece=>piece.id===pieceId?{...piece,status:'ready' as const,currentNode:null,previousPath:[],finishOrder:null,route:'outer' as Route}:piece);
+  return{currentTeam:startingTeam??chosen.teamId,pieces:nextPieces,allReady:nextPieces.every(piece=>piece.status!=='waiting')};
 }
 
 const outerAfter=(position:number|null)=>(position===null||position===0)?Array.from({length:19},(_,i)=>i+1).concat(FINISHED):position>=1&&position<=19?Array.from({length:19-position},(_,i)=>position+i+1).concat(FINISHED):[FINISHED];
