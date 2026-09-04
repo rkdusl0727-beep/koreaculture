@@ -27,13 +27,14 @@ function voiceScore(voice:SpeechSynthesisVoice){
   return score;
 }
 function preferredKoreanVoice(synth:SpeechSynthesis){return synth.getVoices().filter(isKorean).sort((a,b)=>voiceScore(b)-voiceScore(a))[0]}
-function naturalKorean(text:string){return text
+export function normalizeKoreanSpeechText(text:string){return text
   .replaceAll('다듬이돌과','다듬이 돌과')
   .replaceAll('다듬이돌','다듬이 돌')
   .replaceAll('고려청자','고려 청자')
   .replaceAll('조선백자','조선 백자')
   .replaceAll('색동저고리','색동 저고리')
   .replaceAll('전통주머니','전통 주머니')
+  .replace(/(^|\s)갓(?=$|[.!?,\s])/g,'$1갇')
   .replace(/([!?])(?=\S)/g,'$1 ')
   .replace(/\s+/g,' ')
   .trim()}
@@ -66,7 +67,7 @@ export function speakKorean(text:string,enabled:boolean){
     if(request!==speechRequest)return false;
     const voice=preferredKoreanVoice(synth);
     if(!voice&&!allowSystemKorean)return false;
-    const utterance=new SpeechSynthesisUtterance(naturalKorean(text));
+    const utterance=new SpeechSynthesisUtterance(normalizeKoreanSpeechText(text));
     utterance.lang='ko-KR';
     if(voice)utterance.voice=voice;
     utterance.rate=NORMAL_SPEECH_RATE;
