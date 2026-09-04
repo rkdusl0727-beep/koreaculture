@@ -51,6 +51,9 @@ export function placeStartingPiece(pieces:Piece[],pieceId:string,startingTeam:Te
   const nextPieces=pieces.map(piece=>piece.id===pieceId?{...piece,status:'ready' as const,currentNode:null,previousPath:[],finishOrder:null,route:'outer' as Route}:piece);
   return{currentTeam:startingTeam??chosen.teamId,pieces:nextPieces};
 }
+export function startingSetupPieceIds(pieces:Piece[],startingTeam:Team|null):string[]{
+  return pieces.filter(piece=>piece.status==='waiting'&&(!startingTeam||piece.team!==startingTeam)).map(piece=>piece.id);
+}
 
 const outerAfter=(position:number|null)=>(position===null||position===0)?Array.from({length:19},(_,i)=>i+1).concat(FINISHED):position>=1&&position<=19?Array.from({length:19-position},(_,i)=>position+i+1).concat(FINISHED):[FINISHED];
 const shortcut:Record<Route,number[]>={outer:[],tr_to_bl:[23,22,24,26,25,15,16,17,18,19,FINISHED],tl_to_home:[20,21,24,27,28,FINISHED],center_to_bl:[26,25,15,16,17,18,19,FINISHED],center_to_home:[27,28,FINISHED]};

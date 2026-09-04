@@ -14,6 +14,7 @@ import {
   placeStartingPiece,
   resolveMove,
   resultInfo,
+  startingSetupPieceIds,
   winnerFor,
   yutResultFromFaces,
   type Piece,
@@ -76,6 +77,22 @@ test('두 번째 말도 직접 놓고 첫 번째 말의 팀이 선공으로 유�
   assert.equal(second.currentTeam,'blue');
   assert.equal(second.pieces.find(piece=>piece.id==='blue-1')?.status,'ready');
   assert.equal(second.pieces.find(piece=>piece.id==='red-1')?.status,'ready');
+});
+
+test('첫 말을 놓은 뒤에는 반대 팀의 기다리는 말만 출발 준비로 선택한다',()=>{
+  const redFirst=placeStartingPiece(initialPieces(),'red-1',null);
+  assert.deepEqual(startingSetupPieceIds(redFirst.pieces,redFirst.currentTeam),['blue-1','blue-2']);
+  const blueFirst=placeStartingPiece(initialPieces(),'blue-2',null);
+  assert.deepEqual(startingSetupPieceIds(blueFirst.pieces,blueFirst.currentTeam),['red-1','red-2']);
+});
+
+test('빨강과 파랑 말을 하나씩 놓으면 초기 출발 준비가 끝난다',()=>{
+  const first=placeStartingPiece(initialPieces(),'blue-1',null);
+  const second=placeStartingPiece(first.pieces,'red-2',first.currentTeam);
+  assert.equal(second.currentTeam,'blue');
+  assert.equal(second.pieces.filter(piece=>piece.status==='ready'&&piece.team==='red').length,1);
+  assert.equal(second.pieces.filter(piece=>piece.status==='ready'&&piece.team==='blue').length,1);
+  assert.equal(second.pieces.filter(piece=>piece.status==='waiting').length,2);
 });
 
 test('말 한 개만 놓아도 그 말은 바로 출발 준비 상태가 된다',()=>{

@@ -15,6 +15,7 @@ import {
   possibleRoutes,
   placeStartingPiece,
   resolveMove,
+  startingSetupPieceIds,
   type Face,
   type Piece,
   type ResultName,
@@ -284,10 +285,12 @@ function gameReducer(state:GameState,action:Action):GameState{
     case 'START_WITH_PIECE':{
       if(state.phase!=='setup'&&state.phase!=='ready'&&state.phase!=='extraThrow')return state;
       const selected=state.pieces.find(piece=>piece.id===action.pieceId&&piece.status==='waiting');
-      if(!selected||(state.phase!=='setup'&&selected.team!==state.currentTeam))return state;
+      if(!selected||(state.phase==='setup'&&!startingSetupPieceIds(state.pieces,state.startingTeam).includes(action.pieceId))||(state.phase!=='setup'&&selected.team!==state.currentTeam))return state;
       const placed=placeStartingPiece(state.pieces,action.pieceId,state.startingTeam);
       const first=state.startingTeam===null;
-      return{...state,phase:first?'ready':state.phase,pieces:placed.pieces,currentTeam:placed.currentTeam,startingTeam:placed.currentTeam,selectedPieceId:null,message:first?`${state.names[placed.currentTeam]}이 먼저 시작해요! 윷을 던져요!`:`${state.names[placed.currentTeam]} 말이 출발점에 놓였어요. 윷을 던져요!`};
+      const bothTeamsReady=(['red','blue'] as Team[]).every(team=>placed.pieces.some(piece=>piece.team===team&&piece.status==='ready'));
+      const completingSetup=state.phase==='setup'&&bothTeamsReady;
+      return{...state,phase:completingSetup?'ready':state.phase,pieces:placed.pieces,currentTeam:placed.currentTeam,startingTeam:placed.currentTeam,selectedPieceId:null,message:first?`${state.names[placed.currentTeam]}이 먼저 시작해요! 이제 반대 팀 말 하나를 출발점에 놓아요.`:completingSetup?`빨강팀과 파랑팀 말이 하나씩 출발점에 놓였어요. ${state.names[placed.currentTeam]}부터 윷을 던져요!`:`${state.names[placed.currentTeam]} 말이 출발점에 놓였어요. 윷을 던져요!`};
     }
     case 'ROLL_START':
       if(!state.currentTeam||state.winner||(state.phase!=='ready'&&state.phase!=='extraThrow'))return state;
@@ -402,7 +405,7 @@ function Game({soundOn,names,onBack,onHome}:{soundOn:boolean;names:Record<Team,s
   },[state.hinting]);
 
   const selectable=useMemo(()=>{
-    if(state.phase==='setup')return state.pieces.filter(piece=>piece.status==='waiting').map(piece=>piece.id);
+    if(state.phase==='setup')return startingSetupPieceIds(state.pieces,state.startingTeam);
     if((state.phase==='ready'||state.phase==='extraThrow')&&state.currentTeam)return state.pieces.filter(piece=>piece.team===state.currentTeam&&piece.status==='waiting').map(piece=>piece.id);
     if(state.phase==='awaitingMove'&&state.currentRoll&&state.currentTeam){
       return movablePieceIds(state.pieces,state.currentTeam,state.currentRoll);
