@@ -24,7 +24,7 @@ function ExpeditionMenu({open,completed,soundOn}:{open:(value:Activity)=>void;co
     {id:'hidden' as Activity,title:'숨은 문화재 찾기',copy:'풍경 속 문화재를 자세히 찾아요.',image:'/heritage-items/sungnyemun.png',color:'red'},
     {id:'memory-select' as Activity,title:'문화재 메모리게임',copy:'같은 문화재 그림 두 장을 찾아요.',image:'/heritage-items/dabotap.png',color:'blue'},
   ];
-  return <section className="expedition-menu"><div className="expedition-intro"><h2>우리나라 문화재를<br/>찾고 기억해 보아요!</h2></div><div className="expedition-cards">{cards.map((card,index)=><button key={card.id} className={`expedition-card ${card.color}`} onClick={()=>{speakKorean(card.title,soundOn);open(card.id)}}><span className="step">{index+1}</span><img src={card.image} alt=""/><strong>{card.title}</strong><small>{card.copy}</small>{completed.has(card.id==='memory-select'?'memory':card.id)&&<b>완료 ✓</b>}</button>)}</div>{completed.size===2&&<div className="expedition-all-done">문화재를 자세히 찾고 모습도 기억했어요!</div>}</section>;
+  return <section className="expedition-menu"><div className="expedition-intro"><h2>우리나라 문화재를<br/>찾고 기억해 보아요!</h2></div><div className="expedition-cards">{cards.map((card,index)=><button key={card.id} className={`expedition-card ${card.color}`} onClick={()=>{if(card.id==='hidden')speakKorean(card.title,soundOn);else stopKoreanSpeech();open(card.id)}}><span className="step">{index+1}</span><img src={card.image} alt=""/><strong>{card.title}</strong><small>{card.copy}</small>{completed.has(card.id==='memory-select'?'memory':card.id)&&<b>완료 ✓</b>}</button>)}</div>{completed.size===2&&<div className="expedition-all-done">문화재를 자세히 찾고 모습도 기억했어요!</div>}</section>;
 }
 
 function HiddenHeritage({soundOn,onBack,onComplete,onNext}:{soundOn:boolean;onBack:()=>void;onComplete:()=>void;onNext:()=>void}){
@@ -60,9 +60,9 @@ function MemoryGame({count,soundOn,onBack,onComplete,onNext}:{count:number;sound
   const [hinting,setHinting]=useState(false);
   const [message,setMessage]=useState('카드 두 장을 눌러 같은 문화재를 찾아보세요!');
   const complete=matched.length===count;
+  useEffect(()=>{stopKoreanSpeech();return stopKoreanSpeech},[]);
   useEffect(()=>{if(complete)onComplete()},[complete,onComplete]);
-  const playCompleteSound=()=>{playDingDongDaeng(soundOn);window.setTimeout(()=>playDingDongDaeng(soundOn),430)};
-  const choose=(card:MemoryCard)=>{if(!card.treasure||locked||hinting||open.includes(card.key)||matched.includes(card.treasure.id))return;speakKorean(card.treasure.name,soundOn);const next=[...open,card.key];setOpen(next);if(next.length<2)return;setLocked(true);const first=deck.find(value=>value.key===next[0])!;if(first.treasure?.id===card.treasure.id){window.setTimeout(()=>{setMatched(value=>{const updated=[...value,card.treasure!.id];if(updated.length===count)playCompleteSound();else playDingDong(soundOn);return updated});setOpen([]);setLocked(false);setMessage(`같은 문화재를 찾았어요! ${card.treasure!.name}`)},450)}else{setMessage('두 모습을 천천히 비교해 보세요.');window.setTimeout(()=>{setOpen([]);setLocked(false)},1500)}};
+  const choose=(card:MemoryCard)=>{if(!card.treasure||locked||hinting||open.includes(card.key)||matched.includes(card.treasure.id))return;const next=[...open,card.key];setOpen(next);if(next.length<2)return;setLocked(true);const first=deck.find(value=>value.key===next[0])!;if(first.treasure?.id===card.treasure.id){window.setTimeout(()=>{setMatched(value=>[...value,card.treasure!.id]);playDingDong(soundOn);setOpen([]);setLocked(false);setMessage(`같은 문화재를 찾았어요! ${card.treasure!.name}`)},450)}else{setMessage('두 모습을 천천히 비교해 보세요.');window.setTimeout(()=>{setOpen([]);setLocked(false)},1500)}};
   const hint=()=>{if(locked||hinting)return;setHinting(true);setLocked(true);setMessage('모든 문화재의 자리를 2초 동안 살펴봐요.');window.setTimeout(()=>{setHinting(false);setLocked(false)},2000)};
   const restart=()=>{setDeck(current=>makeDifferentDeck(count,current));setOpen([]);setMatched([]);setLocked(false);setHinting(false);setMessage('카드의 자리가 새롭게 섞였어요!')};
   const levelText=count===6?'쉬움 · 6종 12장':count===8?'도전 · 8종 16장':'한 단계 더 · 12종 25장';
