@@ -91,6 +91,8 @@
 .hit-top{left:7%;top:21%;width:86%;height:34%}
 .hit-bottom{left:8%;top:49%;width:84%;height:39%}
 .hit-socks{left:28%;top:81%;width:44%;height:12%}
+.hit-socks-left{left:24%;top:80%;width:27%;height:17%}
+.hit-socks-right{left:49%;top:80%;width:27%;height:17%}
 .hit-shoes{left:24%;top:87%;width:52%;height:10%}
 .hit-ornament{left:50%;top:38%;width:30%;height:27%;z-index:17}
 /* The child bases already wear fitted white beoseon; hide the loose product cutout after selection. */
@@ -99,6 +101,11 @@
 /* In name learning, place the beoseon tag beside the child's visible white socks. */
 .hb-name-explore .label-socks{left:-12%;top:87%}
 .hb-name-explore .label-socks:after{width:46px}
+
+/* Aim the boy's goreum label at the actual front knot, not the collar. */
+.hb-name-explore .label-tie[data-hb-side="boy"]{top:39%}
+.hb-name-explore .label-tie[data-hb-side="boy"]:after{width:98px}
+.hb-name-explore .label-tie[data-hb-side="boy"]:before{right:calc(100% + 92px)}
 
 /* Four fitted hair accessories replace the old norigae and color controls. */
 .hb-accessory-guide{font-size:15px!important;min-height:0!important;margin:0 0 8px}.hb-accessories{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.hb-accessories button{min-height:128px;padding:6px;border:3px solid #202936;border-radius:16px;background:#fffaf0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900}.hb-accessories button.active{background:#e6f1fb;box-shadow:inset 0 0 0 3px #2878b8}.hb-accessories img{display:block;width:100%;height:88px;object-fit:contain}
