@@ -162,9 +162,10 @@ function TeamPanel({team,name,pieces,active}:{team:Team;name:string;pieces:Piece
 
 function TeamStation({team,name,pieces,selectable,onPiece}:{team:Team;name:string;pieces:Piece[];selectable:string[];onPiece:(id:string)=>void}){
   const mine=pieces.filter(piece=>piece.team===team);
-  const starters=mine.filter(piece=>piece.status==='waiting'||piece.status==='ready');
+  const waiting=mine.filter(piece=>piece.status==='waiting');
+  const ready=mine.filter(piece=>piece.status==='ready');
   const finished=mine.filter(piece=>piece.status==='finished').sort((a,b)=>(a.finishOrder||0)-(b.finishOrder||0));
-  return <article className={`team-station ${team}`}><h4>{name}</h4><section><b>출발 대기</b><div className="starter-slots">{starters.map(piece=><Pawn key={piece.id} team={team} selectable={selectable.includes(piece.id)} onActivate={()=>onPiece(piece.id)}/>)}</div></section><section><b>도착한 말</b><div className="finish-slots">{[0,1].map(index=>{const piece=finished[index];return <span key={index} className={piece?'filled':''}>{piece?<><img src={pawnSrc(team,1)} alt=""/><small>{piece.finishOrder}번째 도착</small></>:'☆'}</span>})}</div></section></article>;
+  return <article className={`team-station ${team}`}><h4>{name}</h4>{waiting.length>0&&<section className="piece-pick"><b>말 선택</b><div className="waiting-slots">{waiting.map(piece=><Pawn key={piece.id} team={team} selectable={selectable.includes(piece.id)} onActivate={()=>onPiece(piece.id)}/>)}</div></section>}<section className={`start-ready ${ready.length?'has-ready':''}`}><b>출발 대기</b><div className="starter-slots">{ready.map(piece=><Pawn key={piece.id} team={team} selectable={selectable.includes(piece.id)} onActivate={()=>onPiece(piece.id)}/>)}</div></section><section><b>도착한 말</b><div className="finish-slots">{[0,1].map(index=>{const piece=finished[index];return <span key={index} className={piece?'filled':''}>{piece?<><img src={pawnSrc(team,1)} alt=""/><small>{piece.finishOrder}번째 도착</small></>:'☆'}</span>})}</div></section></article>;
 }
 
 function Practice({soundOn,onBack}:{soundOn:boolean;onBack:()=>void}){
@@ -288,7 +289,7 @@ function gameReducer(state:GameState,action:Action):GameState{
     case 'START_WITH_PIECE':{
       if(state.phase!=='setup'||state.startingTeam)return state;
       const prepared=prepareStartingTeam(state.pieces,action.pieceId);
-      return{...state,phase:'ready',pieces:prepared.pieces,currentTeam:prepared.currentTeam,startingTeam:prepared.currentTeam,selectedPieceId:null,message:`${state.names[prepared.currentTeam]}이 먼저 시작해요!`};
+      return{...state,phase:'ready',pieces:prepared.pieces,currentTeam:prepared.currentTeam,startingTeam:prepared.currentTeam,selectedPieceId:null,message:`${state.names[prepared.currentTeam]}이 먼저 시작해요! 양 팀 말이 출발 대기에 놓였어요. 윷을 던져요!`};
     }
     case 'ROLL_START':
       if(!state.currentTeam||state.winner||(state.phase!=='ready'&&state.phase!=='extraThrow'))return state;

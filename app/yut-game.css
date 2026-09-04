@@ -40,3 +40,4 @@
 .board-touch.target.finish-target{z-index:24!important;border:8px solid #ffd12f!important;background:#fff36dcc!important;animation:none!important;filter:none!important;box-shadow:none!important}
 .board-touch.finish-target.home span{top:50%;transform:translate(-50%,-50%);padding:7px 12px;background:#e7473c;color:white;border-color:white;font-size:16px}
 .phase-setup .team-station{background:#fffdf5}.phase-setup .team-station .png-pawn.selectable{outline:5px solid #ffd12f;outline-offset:1px}
+.waiting-slots{display:flex;align-items:center;justify-content:center;gap:3px;min-height:34px}.team-station .piece-pick{background:#fff4bd;border-radius:8px;padding:3px}.team-station .start-ready{min-height:39px}.team-station .start-ready.has-ready{background:#e9f7e9;border-radius:8px}.phase-setup .team-station .start-ready .starter-slots:empty:after{content:'여기로 이동';color:#70675a;font-size:9px;font-weight:900}
