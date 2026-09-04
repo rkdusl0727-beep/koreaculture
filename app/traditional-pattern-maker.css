@@ -8,3 +8,21 @@
 .tp-object{min-width:0!important;min-height:0!important;padding:0;border:0;background:transparent}
 .tp-dialog{width:100%;height:100%;max-width:none;max-height:none;margin:0;border:0}
 .tp-dialog[open]{display:grid}
+
+/* 유아용 영역 색칠 UI */
+.tp-symmetry button,.tp-board-actions button{position:relative;border:3px solid var(--ink);border-radius:14px;background:#fff;color:var(--ink);font-weight:950;cursor:pointer}
+.tp-symmetry button.active{background:var(--green);color:#fff}
+.tp-object svg path{cursor:pointer}
+.tp-board-actions{grid-template-columns:repeat(6,1fr)}
+.tp-color-help{margin:-7px 0 0;text-align:center;color:#655d50;font-size:.95rem;font-weight:900}
+.tp-colors{grid-template-columns:repeat(3,1fr);gap:9px}
+.tp-colors button{width:auto;height:auto;min-width:0;min-height:78px;padding:6px 3px;border:3px solid transparent;border-radius:14px;background:#fffaf0;box-shadow:none;display:grid;place-items:center;gap:3px;cursor:pointer}
+.tp-colors button.active{border-color:var(--ink);background:#fff;box-shadow:0 0 0 3px var(--yellow);transform:none}
+.tp-color-dot{display:grid!important;place-items:center;width:42px!important;height:42px!important;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 2px #8c8170;color:#fff;font-size:1.25rem!important;font-weight:950;text-shadow:0 2px 3px #222}
+.tp-colors button:last-child .tp-color-dot{color:var(--ink);text-shadow:none}
+.tp-colors b{font-size:.9rem}
+.tp-dialog button{color:var(--ink)}
+.tp-confirm button:last-child{background:var(--green);color:#fff}
+@media(max-width:1250px){.tp-colors{grid-template-columns:repeat(2,1fr)}.tp-board-actions{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.tp-colors{grid-template-columns:repeat(6,1fr)}}
+@media(max-width:600px){.tp-colors{grid-template-columns:repeat(3,1fr)}.tp-board-actions{grid-template-columns:repeat(2,1fr)}}
