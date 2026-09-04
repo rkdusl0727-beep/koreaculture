@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
 import {Button} from '@/components/ui/button';
 import {speakKorean,stopKoreanSpeech} from './korean-speech';
 import HomeIconButton from './home-icon-button';
@@ -14,8 +14,9 @@ type Name='저고리'|'치마'|'바지'|'두루마기'|'버선'|'꽃신'|'노리
 type Focus='goreum'|'git'|'dongjeong'|'somae';
 type Item={name:Name;description:string;image:string;focus?:Focus};
 type Gender='girl'|'boy';
-type Slot='jeogori'|'bottom'|'baeja'|'durumagi'|'norigae';
-type Piece={id:string;name:string;slot:Slot;gender:Gender;image:string;preview?:string};
+type UpperKind='jeogori'|'baeja'|'durumagi';
+type Slot='upper'|'bottom'|'norigae';
+type Piece={id:string;name:string;slot:Slot;gender:Gender;image:string;preview?:string;kind?:UpperKind;underlay?:string;fit?:[number,number,number,number]};
 type Outfit=Partial<Record<Slot,Piece>>;
 
 const root='/hanbok-studio/garments/';
@@ -35,21 +36,28 @@ const items:Item[]=[
  {name:'배자',description:'저고리 위에 덧입는 소매 없는 옷이에요.',image:root+'baeja-1.png'},
 ];
 const byName=Object.fromEntries(items.map(item=>[item.name,item])) as Record<Name,Item>;
-const labels:Record<Gender,Record<Slot,string>>={girl:{jeogori:'저고리',bottom:'치마',baeja:'배자',durumagi:'두루마기',norigae:'노리개'},boy:{jeogori:'저고리',bottom:'바지',baeja:'배자',durumagi:'두루마기',norigae:'노리개'}};
+const labels:Record<Gender,Record<Slot,string>>={girl:{upper:'윗옷',bottom:'치마',norigae:'노리개'},boy:{upper:'윗옷',bottom:'바지',norigae:'노리개'}};
 const wardrobe:Piece[]=[
  ...(['girl','boy'] as Gender[]).flatMap(g=>[
-  {id:`${g}-jeogori-1`,name:'저고리 1',slot:'jeogori' as const,gender:g,image:coordRoot+`${g}-jeogori-1.png`},
-  {id:`${g}-jeogori-2`,name:'저고리 2',slot:'jeogori' as const,gender:g,image:coordRoot+`${g}-jeogori-2.png`},
+  {id:`${g}-jeogori-1`,name:'저고리 1',slot:'upper' as const,kind:'jeogori' as const,gender:g,image:coordRoot+`${g}-jeogori-1.png`},
+  {id:`${g}-jeogori-2`,name:'저고리 2',slot:'upper' as const,kind:'jeogori' as const,gender:g,image:coordRoot+`${g}-jeogori-2.png`},
   {id:`${g}-bottom-1`,name:`${g==='girl'?'치마':'바지'} 1`,slot:'bottom' as const,gender:g,image:coordRoot+`${g}-${g==='girl'?'chima':'baji'}-1.png`},
   {id:`${g}-bottom-2`,name:`${g==='girl'?'치마':'바지'} 2`,slot:'bottom' as const,gender:g,image:coordRoot+`${g}-${g==='girl'?'chima':'baji'}-2.png`},
-  {id:`${g}-baeja-1`,name:'배자 1',slot:'baeja' as const,gender:g,image:coordRoot+`${g}-baeja-1.png`},
-  {id:`${g}-baeja-2`,name:'배자 2',slot:'baeja' as const,gender:g,image:coordRoot+`${g}-baeja-2.png`},
-  {id:`${g}-durumagi-1`,name:'두루마기 1',slot:'durumagi' as const,gender:g,image:coordRoot+`${g}-durumagi-1.png`},
-  {id:`${g}-durumagi-2`,name:'두루마기 2',slot:'durumagi' as const,gender:g,image:coordRoot+`${g}-durumagi-2.png`},
+  {id:`${g}-baeja-1`,name:'배자 1',slot:'upper' as const,kind:'baeja' as const,gender:g,image:coordRoot+`${g}-baeja-1.png`,underlay:coordRoot+`${g}-jeogori-1.png`},
+  {id:`${g}-baeja-2`,name:'배자 2',slot:'upper' as const,kind:'baeja' as const,gender:g,image:coordRoot+`${g}-baeja-2.png`,underlay:coordRoot+`${g}-jeogori-2.png`},
+  {id:`${g}-durumagi-1`,name:'두루마기 1',slot:'upper' as const,kind:'durumagi' as const,gender:g,image:coordRoot+`${g}-durumagi-1.png`},
+  {id:`${g}-durumagi-2`,name:'두루마기 2',slot:'upper' as const,kind:'durumagi' as const,gender:g,image:coordRoot+`${g}-durumagi-2.png`},
  ]),
+ {id:'girl-bottom-3',name:'치마 3',slot:'bottom',gender:'girl',image:root+'chima-2.png',fit:[150,250,500,700]},
+ {id:'girl-bottom-4',name:'치마 4',slot:'bottom',gender:'girl',image:root+'chima-3.png',fit:[150,250,500,700]},
+ {id:'girl-bottom-5',name:'치마 5',slot:'bottom',gender:'girl',image:root+'chima-5.png',fit:[150,250,500,700]},
+ {id:'girl-bottom-6',name:'치마 6',slot:'bottom',gender:'girl',image:root+'chima-1.png',fit:[150,250,500,700]},
  {id:'girl-norigae-1',name:'노리개 1',slot:'norigae',gender:'girl',image:coordRoot+'girl-norigae-1.png',preview:root+'norigae-1.png'},
  {id:'girl-norigae-2',name:'노리개 2',slot:'norigae',gender:'girl',image:coordRoot+'girl-norigae-2.png',preview:root+'norigae-2.png'},
 ];
+const loadCoordinatorImage=(src:string)=>new Promise<HTMLImageElement>((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=reject;image.src=src});
+async function drawCoordinatorPiece(context:CanvasRenderingContext2D,piece:Piece){context.clearRect(0,0,800,1000);if(piece.kind==='baeja'&&piece.underlay){const [underlay,baeja]=await Promise.all([loadCoordinatorImage(piece.underlay),loadCoordinatorImage(piece.image)]);const buffer=document.createElement('canvas');buffer.width=800;buffer.height=1000;const bx=buffer.getContext('2d')!;bx.drawImage(underlay,0,0,800,1000);bx.globalCompositeOperation='destination-out';bx.beginPath();bx.moveTo(330,0);bx.lineTo(470,0);bx.lineTo(490,420);bx.lineTo(310,420);bx.closePath();bx.fill();context.drawImage(buffer,0,0);context.drawImage(baeja,0,0,800,1000);context.save();context.beginPath();context.rect(420,175,78,245);context.clip();context.translate(800,0);context.scale(-1,1);context.drawImage(baeja,0,0,800,1000);context.restore();return}const image=await loadCoordinatorImage(piece.image);if(piece.fit)context.drawImage(image,...piece.fit);else context.drawImage(image,0,0,800,1000)}
+function CoordinatorLayer({piece,className}:{piece:Piece;className:string}){const ref=useRef<HTMLCanvasElement>(null);useEffect(()=>{const context=ref.current?.getContext('2d');if(context)void drawCoordinatorPiece(context,piece)},[piece]);return <canvas ref={ref} width="800" height="1000" className={className} aria-label={piece.name}/>}
 function shuffle<T>(a:T[]){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]]}return r}
 function Header({title,back,home,soundOn,toggleSound}:{title:string;back:()=>void;home:()=>void;soundOn:boolean;toggleSound:()=>void}){return <header className="hb-header"><HomeIconButton onClick={home}/><Button variant="outline" onClick={back}>← 이전</Button><h1>{title}</h1><SoundIconButton soundOn={soundOn} onClick={toggleSound}/></header>}
 function FocusOverlay({focus}:{focus:Focus}){const paths:Record<Focus,string[]>={goreum:['M102 92C116 84 129 91 135 99C144 91 158 91 169 97L168 116C151 123 140 121 126 113L116 211H83L91 112C80 106 86 94 102 92Z'],git:['M70 55L123 103L157 69L189 99L138 146L72 83Z'],dongjeong:['M75 49L126 94L159 62L190 91L137 136L70 76Z'],somae:['M21 93L79 63L103 91L76 185L33 169Z','M170 90L194 63L250 94L238 170L196 185Z']};return <svg className={`hb-focus-svg focus-${focus}`} viewBox="0 0 271 257" aria-hidden="true">{paths[focus].map((d,i)=><path key={i} d={d}/>)}</svg>}
@@ -58,17 +66,15 @@ function ItemArt({item,small=false}:{item:Item;small?:boolean}){return <div clas
 function Celebrate(){return <div className="hb-celebrate" aria-hidden="true">{Array.from({length:18},(_,i)=><i key={i} style={{'--i':i} as React.CSSProperties}>{i%2?'✿':'★'}</i>)}</div>}
 
 function Coordinator({soundOn,onHome}:{soundOn:boolean;onHome:()=>void}){
- const [gender,setGender]=useState<Gender>('girl');const [slot,setSlot]=useState<Slot>('jeogori');const [outfit,setOutfit]=useState<Outfit>({});const [message,setMessage]=useState('옷을 눌러 멋진 한복을 코디해 보세요.');
- const allowed:Slot[]=gender==='girl'?['jeogori','bottom','baeja','durumagi','norigae']:['jeogori','bottom','baeja','durumagi'];
- const choices=wardrobe.filter(p=>p.gender===gender&&p.slot===slot);
- const changeGender=(g:Gender)=>{setGender(g);setSlot('jeogori');setOutfit({});setMessage(`${g==='girl'?'여자':'남자'} 한복을 골라 보세요.`)};
+ const [gender,setGender]=useState<Gender>('girl');const [slot,setSlot]=useState<Slot>('upper');const [upperFilter,setUpperFilter]=useState<UpperKind>('jeogori');const [outfit,setOutfit]=useState<Outfit>({});const [message,setMessage]=useState('옷을 눌러 멋진 한복을 코디해 보세요.');
+ const choices=wardrobe.filter(p=>p.gender===gender&&p.slot===slot&&(slot!=='upper'||p.kind===upperFilter));
+ const changeGender=(g:Gender)=>{setGender(g);setSlot('upper');setUpperFilter('jeogori');setOutfit({});setMessage(`${g==='girl'?'여자':'남자'} 한복을 골라 보세요.`)};
  const wear=(p:Piece)=>{setOutfit(v=>({...v,[p.slot]:p}));setMessage(`${p.name}을 골랐어요.`)};
- const removeOne=()=>{const target=(['norigae','durumagi','baeja','jeogori','bottom'] as Slot[]).find(key=>outfit[key]);if(!target){setMessage('벗을 옷이 없어요.');return}setOutfit(v=>{const next={...v};delete next[target];return next});setMessage(`${labels[gender][target]}을 벗었어요.`)};
- const saveImage=async()=>{const c=document.createElement('canvas');c.width=800;c.height=1000;const x=c.getContext('2d');if(!x)return;x.fillStyle='#fffaf0';x.fillRect(0,0,800,1000);const sources=[coordRoot+`mannequin-${gender}.png`,outfit.bottom?.image,outfit.jeogori?.image,outfit.baeja?.image,outfit.durumagi?.image,outfit.norigae?.image].filter(Boolean) as string[];for(const src of sources){const image=await new Promise<HTMLImageElement>((resolve,reject)=>{const node=new Image();node.onload=()=>resolve(node);node.onerror=reject;node.src=src});x.drawImage(image,0,0,800,1000)}const a=document.createElement('a');a.download='나의-한복.png';a.href=c.toDataURL('image/png');a.click();setMessage('한복 이미지를 저장했어요.')};
- const order:Slot[]=['bottom','jeogori','baeja','durumagi','norigae'];
- return <section className="hb-coordinator"><div className="hb-fixed-guide"><h2>옷을 눌러 멋진 한복을 코디해 보세요.</h2><p aria-live="polite">{message}</p></div><div className="hb-coord-layout"><div className="hb-mannequin-panel"><div className="hb-gender-switch"><button className={gender==='girl'?'active':''} onClick={()=>changeGender('girl')}>여자 한복</button><button className={gender==='boy'?'active':''} onClick={()=>changeGender('boy')}>남자 한복</button></div><div className={`hb-mannequin ${outfit.durumagi?'has-coat':''}`} aria-label={`${gender==='girl'?'여자':'남자'} 한복 마네킹`}>
-  {/* oxlint-disable-next-line next/no-img-element */}<img className="coord-layer coord-layer-mannequin" src={`${coordRoot}mannequin-${gender}.png`} alt=""/>{order.map(key=>outfit[key]&&/* oxlint-disable-next-line next/no-img-element */<img key={key} className={`coord-layer coord-layer-${key}`} src={outfit[key]?.image} alt={outfit[key]?.name}/>)}</div></div>
- <div className="hb-wardrobe"><div className="hb-slot-tabs">{allowed.map(key=><button key={key} className={slot===key?'active':''} onClick={()=>setSlot(key)}>{labels[gender][key]}</button>)}</div><div className="hb-coord-cards">{choices.map(p=><button key={p.id} className={outfit[p.slot]?.id===p.id?'selected':''} onClick={()=>wear(p)}>{/* oxlint-disable-next-line next/no-img-element */}<img src={p.preview??p.image} alt=""/><b>{p.name}</b>{outfit[p.slot]?.id===p.id&&<span aria-label="선택됨">✓</span>}</button>)}</div><div className="hb-coord-actions"><Button variant="outline" onClick={removeOne}>하나씩 벗기</Button><Button variant="outline" onClick={()=>{setOutfit({});setMessage('마네킹의 옷을 모두 벗겼어요.')}}>모두 벗기</Button><Button onClick={()=>{setMessage('나만의 한복 코디가 완성되었어요!');playDingDongDaeng(soundOn)}}>완성하기</Button><Button onClick={saveImage}>이미지 저장</Button><Button variant="outline" onClick={onHome}>한복 첫 화면</Button></div></div></div></section>;
+ const removeOne=()=>{const target=(['norigae','upper','bottom'] as Slot[]).find(key=>outfit[key]);if(!target){setMessage('벗을 옷이 없어요.');return}setOutfit(v=>{const next={...v};delete next[target];return next});setMessage(`${labels[gender][target]}을 벗었어요.`)};
+ const saveImage=async()=>{const c=document.createElement('canvas');c.width=800;c.height=1000;const x=c.getContext('2d');if(!x)return;x.fillStyle='#fffaf0';x.fillRect(0,0,800,1000);if(!outfit.upper){const mannequin=await loadCoordinatorImage(coordRoot+`mannequin-${gender}.png`);x.drawImage(mannequin,0,0,800,1000)}for(const piece of [outfit.bottom,outfit.upper,outfit.norigae])if(piece){const layer=document.createElement('canvas');layer.width=800;layer.height=1000;await drawCoordinatorPiece(layer.getContext('2d')!,piece);x.drawImage(layer,0,0)}const a=document.createElement('a');a.download='나의-한복.png';a.href=c.toDataURL('image/png');a.hidden=true;document.body.appendChild(a);a.click();a.remove();setMessage('한복 이미지를 저장했어요.')};
+ return <section className="hb-coordinator"><div className="hb-fixed-guide"><h2>옷을 눌러 멋진 한복을 코디해 보세요.</h2><p aria-live="polite">{message}</p></div><div className="hb-coord-layout"><div className="hb-mannequin-panel"><div className="hb-gender-switch"><button className={gender==='girl'?'active':''} onClick={()=>changeGender('girl')}>여자 한복</button><button className={gender==='boy'?'active':''} onClick={()=>changeGender('boy')}>남자 한복</button></div><div className={`hb-mannequin ${outfit.upper?.kind==='durumagi'?'has-coat':''}`} aria-label={`${gender==='girl'?'여자':'남자'} 한복 마네킹`}>
+  {/* oxlint-disable-next-line next/no-img-element */}<img className={`coord-layer coord-layer-mannequin ${outfit.upper?'covered':''}`} src={`${coordRoot}mannequin-${gender}.png`} alt=""/>{outfit.bottom&&<CoordinatorLayer piece={outfit.bottom} className="coord-layer coord-layer-bottom"/>}{outfit.upper&&<CoordinatorLayer piece={outfit.upper} className="coord-layer coord-layer-upper"/>}{outfit.norigae&&<CoordinatorLayer piece={outfit.norigae} className={`coord-layer coord-layer-norigae upper-${outfit.upper?.kind??'none'}`}/>}</div></div>
+ <div className="hb-wardrobe"><div className="hb-slot-tabs"><button className={slot==='upper'&&upperFilter==='jeogori'?'active':''} onClick={()=>{setSlot('upper');setUpperFilter('jeogori')}}>저고리</button><button className={slot==='upper'&&upperFilter==='baeja'?'active':''} onClick={()=>{setSlot('upper');setUpperFilter('baeja')}}>배자</button><button className={slot==='upper'&&upperFilter==='durumagi'?'active':''} onClick={()=>{setSlot('upper');setUpperFilter('durumagi')}}>두루마기</button><button className={slot==='bottom'?'active':''} onClick={()=>setSlot('bottom')}>{labels[gender].bottom}</button>{gender==='girl'&&<button className={slot==='norigae'?'active':''} onClick={()=>setSlot('norigae')}>노리개</button>}</div><div className="hb-coord-cards">{choices.map(p=><button key={p.id} className={outfit[p.slot]?.id===p.id?'selected':''} onClick={()=>wear(p)}>{/* oxlint-disable-next-line next/no-img-element */}<img src={p.preview??p.image} alt=""/><b>{p.name}</b>{outfit[p.slot]?.id===p.id&&<span aria-label="선택됨">✓</span>}</button>)}</div><div className="hb-coord-actions"><Button variant="outline" onClick={removeOne}>하나씩 벗기</Button><Button variant="outline" onClick={()=>{setOutfit({});setMessage('마네킹의 옷을 모두 벗겼어요.')}}>모두 벗기</Button><Button onClick={()=>{setMessage('나만의 한복 코디가 완성되었어요!');playDingDongDaeng(soundOn)}}>완성하기</Button><Button onClick={saveImage}>이미지 저장</Button><Button variant="outline" onClick={onHome}>한복 첫 화면</Button></div></div></div></section>;
 }
 
 function Learn({soundOn}:{soundOn:boolean}){const [selected,setSelected]=useState<number|null>(null);const speak=(item:Item)=>{stopKoreanSpeech();speakKorean(`${item.name}. ${item.description}`,soundOn,.86)};if(selected===null)return <section className="hb-learn-list"><div className="hb-fixed-guide"><h2>알고 싶은 한복 그림을 눌러 보세요.</h2><p>한 번에 한 가지씩 자세히 살펴봐요.</p></div><div className="hb-learning-grid">{items.map((item,i)=><button key={item.name} onClick={()=>setSelected(i)}><ItemArt item={item} small/><b>{item.name}</b></button>)}</div></section>;const item=items[selected];return <section className="hb-learn-detail"><div className="hb-fixed-guide"><h2>한복 이름 알아보기</h2><p>그림 전체와 강조된 부분을 천천히 살펴봐요.</p></div><ItemArt item={item}/><div className="hb-learn-copy"><h2>{item.name}</h2><p>{item.description}</p><Button onClick={()=>speak(item)}>🔊 명칭과 설명 듣기</Button></div><nav><Button variant="outline" onClick={()=>setSelected(v=>v===0?items.length-1:(v??1)-1)}>← 이전</Button><Button variant="outline" onClick={()=>setSelected(null)}>목록으로</Button><Button onClick={()=>setSelected(v=>v===items.length-1?0:(v??-1)+1)}>다음 →</Button></nav></section>}
