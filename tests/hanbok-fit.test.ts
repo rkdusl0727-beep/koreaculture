@@ -43,4 +43,17 @@ for(const kind of [0,1] as const){
       assert.ok(visibleWidth/headWidth<=.25,`${id} is too wide for child ${kind+1}`);
     }
   });
+
+  void test(`child ${kind+1} footwear and lower garments stay inside the full-body canvas`,()=>{
+    for(const id of ['beoseon-1','beoseon-2','beoseon-3','flower-shoes-1','flower-shoes-2','flower-shoes-3','flower-shoes-4']){
+      const fit=getHanbokFit(kind,id,id.startsWith('beoseon')?'socks':'shoes');
+      assert.ok(fit.top>=80,`${id} is above the feet`);
+      assert.ok(fit.top+fit.height<=103,`${id} falls below the child canvas`);
+    }
+    const bottoms=kind===0?Array.from({length:6},(_,i)=>`chima-${i+1}`):Array.from({length:5},(_,i)=>`baji-${i+1}`);
+    for(const id of bottoms){
+      const fit=getHanbokFit(kind,id,'bottom');
+      assert.ok(fit.top+fit.height<=98,`${id} covers the action area`);
+    }
+  });
 }

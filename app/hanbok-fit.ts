@@ -46,6 +46,7 @@ const geometry:Record<string,ImageGeometry>={
   'chima-4':{width:271,height:321,alpha:{x:10,y:15,width:237,height:296}},
   'chima-5':{width:249,height:321,alpha:{x:10,y:14,width:224,height:297}},
   'chima-6':{width:256,height:321,alpha:{x:14,y:15,width:232,height:296}},
+  'chima-6':{width:256,height:321,alpha:{x:14,y:15,width:232,height:296}},
   'baji-1':{width:256,height:333,alpha:{x:16,y:41,width:230,height:282}},
   'baji-2':{width:271,height:333,alpha:{x:36,y:42,width:224,height:281}},
   'baji-3':{width:270,height:333,alpha:{x:24,y:42,width:222,height:281}},
@@ -54,9 +55,11 @@ const geometry:Record<string,ImageGeometry>={
   'durumagi-1':{width:1024,height:1536,alpha:{x:24,y:32,width:978,height:1504}},
   'durumagi-2':{width:1024,height:1536,alpha:{x:43,y:78,width:939,height:1416}},
   'durumagi-3':{width:1024,height:1536,alpha:{x:27,y:0,width:968,height:1496}},
-  'beoseon-1':{width:1536,height:1024,alpha:{x:189,y:84,width:1066,height:850}},
-  'beoseon-2':{width:1536,height:1024,alpha:{x:189,y:84,width:1066,height:850}},
-  'beoseon-3':{width:1536,height:1024,alpha:{x:189,y:84,width:1066,height:850}},
+  // The studio uses the paired, front-facing beoseon cutouts. Their canvas and
+  // visible bounds differ from the catalog image, so they need their own crop.
+  'beoseon-1':{width:600,height:300,alpha:{x:68,y:32,width:452,height:235}},
+  'beoseon-2':{width:600,height:300,alpha:{x:56,y:32,width:461,height:235}},
+  'beoseon-3':{width:600,height:300,alpha:{x:68,y:32,width:452,height:235}},
   'flower-shoes-1':{width:600,height:300,alpha:{x:64,y:32,width:472,height:235}},
   'flower-shoes-2':{width:600,height:300,alpha:{x:63,y:32,width:471,height:235}},
   'flower-shoes-3':{width:600,height:300,alpha:{x:64,y:32,width:472,height:235}},
@@ -69,27 +72,27 @@ const geometry:Record<string,ImageGeometry>={
 
 const slotTargets:Record<0|1,Record<Exclude<HanbokFitSlot,'tie'>,VisibleTarget>>={
   0:{
-    socks:{left:24,top:84,width:52,zIndex:1},bottom:{left:6,top:48.5,width:88,zIndex:2},
+    socks:{left:31,top:86,width:38,zIndex:1},bottom:{left:17,top:49.5,width:66,zIndex:2},
     top:{left:6,top:28.2,width:88,zIndex:3},coat:{left:1,top:24,width:98,zIndex:4},
-    shoes:{left:31,top:91,width:38,zIndex:5},ornament:{left:51,top:39,width:27,zIndex:6},
+    shoes:{left:34,top:92.5,width:32,zIndex:5},ornament:{left:51,top:39,width:27,zIndex:6},
     hair:{left:22,top:4.2,width:56,zIndex:9},
   },
   1:{
-    socks:{left:24,top:84.5,width:48,zIndex:1},bottom:{left:10,top:49,width:78,zIndex:2},
+    socks:{left:31,top:86.5,width:36,zIndex:1},bottom:{left:17,top:50,width:64,zIndex:2},
     top:{left:2,top:27.5,width:94,zIndex:3},coat:{left:3,top:24.5,width:92,zIndex:4},
-    shoes:{left:31,top:91,width:36,zIndex:5},ornament:{left:50,top:40,width:25,zIndex:6},
+    shoes:{left:35,top:92.5,width:30,zIndex:5},ornament:{left:50,top:40,width:25,zIndex:6},
     hair:{left:25,top:3.8,width:48,zIndex:9},
   },
 };
 
 const itemTargets:Record<0|1,Record<string,VisibleTarget>>={
   0:{
-    'hairband-1':{left:24,top:5.8,width:52,zIndex:8},'hairband-2':{left:24,top:5.2,width:52,zIndex:8},
-    'hairpin-1':{left:67,top:7.2,width:13.5,rotation:-8,zIndex:10},'hairpin-2':{left:20.2,top:7.6,width:13.8,rotation:8,zIndex:10},
+    'hairband-1':{left:29,top:6.7,width:42,zIndex:8},'hairband-2':{left:29,top:6.2,width:42,zIndex:8},
+    'hairpin-1':{left:68,top:7.4,width:11.5,rotation:-8,zIndex:10},'hairpin-2':{left:21.5,top:7.8,width:11.8,rotation:8,zIndex:10},
   },
   1:{
-    'hairband-1':{left:25,top:4.6,width:48,zIndex:8},'hairband-2':{left:26,top:4.1,width:46,zIndex:8},
-    'hairpin-1':{left:63,top:7.1,width:12,rotation:-8,zIndex:10},'hairpin-2':{left:27.2,top:7.4,width:12.2,rotation:8,zIndex:10},
+    'hairband-1':{left:30,top:5.8,width:38,zIndex:8},'hairband-2':{left:30,top:5.3,width:38,zIndex:8},
+    'hairpin-1':{left:63.5,top:7.2,width:10.5,rotation:-8,zIndex:10},'hairpin-2':{left:28,top:7.6,width:10.7,rotation:8,zIndex:10},
   },
 };
 

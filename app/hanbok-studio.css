@@ -134,3 +134,34 @@
 .slot-top[class*="garment-jeogori-"] img,.slot-coat img{object-fit:contain!important}
 .slot-top[class*="garment-jeogori-"] .hb-tint,.slot-coat .hb-tint{-webkit-mask-size:contain!important;mask-size:contain!important}
 .slot-hair img{object-fit:contain!important}
+
+/* Studio layout: instructions and actions live outside the full-body canvas. */
+.hb-design{height:auto;min-height:calc(100dvh - 92px);align-items:stretch;box-sizing:border-box}
+.hb-stage-panel{min-height:0;overflow:hidden}
+.hb-character-switch{flex:0 0 auto}
+.hb-message{order:1;flex:0 0 auto;width:100%;margin:12px 0 0;position:relative;z-index:20}
+.hb-drop-stage{order:2;min-height:0;flex:1;padding:10px 0;overflow:hidden}
+.hb-drop-stage .hb-character{height:clamp(360px,56dvh,610px);max-height:100%}
+.hb-stage-actions{order:3;flex:0 0 auto;width:100%;justify-content:center;margin-top:24px;padding-top:12px;border-top:3px solid #cbd8c6;position:relative;z-index:20;background:#eaf4e5}
+.hb-stage-actions .hb-finish{min-width:180px}
+
+/* One undistorted 1:2 canvas is shared by the child and every wearable layer. */
+.hb-character{overflow:hidden}
+.hb-base,.hb-base-piece{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center top;pointer-events:none}
+.hb-base-piece{z-index:0}
+.hb-base-head{clip-path:polygon(0 0,100% 0,100% 26%,58% 26%,58% 30%,42% 30%,42% 26%,0 26%)}
+.hb-base-legs{clip-path:inset(52% 0 0 0)}
+.hb-neck-fill{position:absolute;z-index:2;left:42%;top:25.5%;width:16%;height:9%;border-radius:45% 45% 55% 55%;background:linear-gradient(90deg,#efae8e,#f7c0a1 50%,#efae8e);pointer-events:none}
+.hb-base-hand{z-index:2}
+.hb-base-hand-left{clip-path:polygon(0 46%,18% 46%,18% 59%,0 59%)}
+.hb-base-hand-right{clip-path:polygon(82% 46%,100% 46%,100% 59%,82% 59%)}
+.hb-base-hair-front{z-index:9}
+.hb-base-hair-left{clip-path:polygon(17% 4%,36% 4%,36% 18%,17% 18%)}
+.hb-base-hair-right{clip-path:polygon(64% 4%,83% 4%,83% 18%,64% 18%)}
+
+/* Paired beoseon sit on the two feet; flower shoes remain above them. */
+.slot-socks img,.slot-socks .hb-tint{opacity:1!important}
+.slot-socks .hb-tint{display:none}
+
+@media(max-width:1050px){.hb-design{min-height:auto}.hb-stage-panel{min-height:680px}.hb-drop-stage .hb-character{height:520px}}
+@media(max-width:720px){.hb-stage-panel{min-height:0}.hb-drop-stage{min-height:470px}.hb-drop-stage .hb-character{height:min(470px,67dvh)}.hb-message{font-size:16px}.hb-stage-actions{margin-top:24px}}
