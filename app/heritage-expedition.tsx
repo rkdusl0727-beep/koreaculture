@@ -6,7 +6,7 @@ import {setNormalAudioSpeed,speakKorean,stopKoreanSpeech} from './korean-speech'
 import {HERITAGE_CLUES,HERITAGE_TREASURES,HeritageTreasure,shuffled} from './heritage-data';
 import HomeIconButton from './home-icon-button';
 import SoundIconButton from './sound-icon-button';
-import {playDingDongDaeng} from './correct-sound';
+import {playCelebrationSound,playDingDongDaeng} from './correct-sound';
 import './heritage-expedition.css';
 
 type Activity='menu'|'hidden'|'memory-select'|'memory';
@@ -59,12 +59,13 @@ function MemoryGame({count,soundOn,onBack,onComplete,onNext}:{count:number;sound
   const [locked,setLocked]=useState(false);
   const [hinting,setHinting]=useState(false);
   const [message,setMessage]=useState('카드 두 장을 눌러 같은 문화재를 찾아보세요!');
+  const celebrated=useRef(false);
   const complete=matched.length===count;
   useEffect(()=>{stopKoreanSpeech();return stopKoreanSpeech},[]);
-  useEffect(()=>{if(complete)onComplete()},[complete,onComplete]);
-  const choose=(card:MemoryCard)=>{if(!card.treasure||locked||hinting||open.includes(card.key)||matched.includes(card.treasure.id))return;const next=[...open,card.key];setOpen(next);if(next.length<2)return;setLocked(true);const first=deck.find(value=>value.key===next[0])!;if(first.treasure?.id===card.treasure.id){window.setTimeout(()=>{setMatched(value=>[...value,card.treasure!.id]);playDingDong(soundOn);setOpen([]);setLocked(false);setMessage(`같은 문화재를 찾았어요! ${card.treasure!.name}`)},450)}else{setMessage('두 모습을 천천히 비교해 보세요.');window.setTimeout(()=>{setOpen([]);setLocked(false)},1500)}};
+  useEffect(()=>{if(!complete||celebrated.current)return;celebrated.current=true;playCelebrationSound(soundOn);onComplete()},[complete,onComplete,soundOn]);
+  const choose=(card:MemoryCard)=>{if(!card.treasure||locked||hinting||open.includes(card.key)||matched.includes(card.treasure.id))return;const next=[...open,card.key];setOpen(next);if(next.length<2)return;setLocked(true);const first=deck.find(value=>value.key===next[0])!;if(first.treasure?.id===card.treasure.id){window.setTimeout(()=>{const isFinalPair=matched.length+1===count;setMatched(value=>[...value,card.treasure!.id]);if(!isFinalPair)playDingDong(soundOn);setOpen([]);setLocked(false);setMessage(isFinalPair?'문화재 짝을 모두 찾았어요!':`같은 문화재를 찾았어요! ${card.treasure!.name}`)},450)}else{setMessage('두 모습을 천천히 비교해 보세요.');window.setTimeout(()=>{setOpen([]);setLocked(false)},1500)}};
   const hint=()=>{if(locked||hinting)return;setHinting(true);setLocked(true);setMessage('모든 문화재의 자리를 2초 동안 살펴봐요.');window.setTimeout(()=>{setHinting(false);setLocked(false)},2000)};
-  const restart=()=>{setDeck(current=>makeDifferentDeck(count,current));setOpen([]);setMatched([]);setLocked(false);setHinting(false);setMessage('카드의 자리가 새롭게 섞였어요!')};
+  const restart=()=>{celebrated.current=false;setDeck(current=>makeDifferentDeck(count,current));setOpen([]);setMatched([]);setLocked(false);setHinting(false);setMessage('카드의 자리가 새롭게 섞였어요!')};
   const levelText=count===6?'쉬움 · 6종 12장':count===8?'도전 · 8종 16장':'한 단계 더 · 12종 25장';
   return <section className="expedition-activity memory-activity"><div className="expedition-heading"><Button variant="outline" onClick={onBack}>← 이전</Button><div><h2>문화재 메모리게임</h2><p>{levelText}</p></div><strong>{matched.length} / {count} 짝</strong></div><div className={`memory-grid cards-${deck.length}`}>{deck.map(card=>{const visible=!!card.bonus||hinting||open.includes(card.key)||!!card.treasure&&matched.includes(card.treasure.id);const isMatched=!!card.bonus||!!card.treasure&&matched.includes(card.treasure.id);return <button key={card.key} className={`memory-card ${card.treasure?`memory-${card.treasure.id}`:'memory-bonus'} ${visible?'open':''} ${isMatched?'matched':''}`} disabled={!!card.bonus||(locked&&!open.includes(card.key))} onClick={()=>choose(card)} aria-label={card.bonus?'가운데 행운 카드':visible?card.treasure!.name:'뒤집힌 문화재 카드'}><span className="memory-inner"><span className="memory-back"><i/><b>문화재</b></span><span className="memory-front">{card.bonus?<><span className="memory-bonus-mark">★</span><b>행운 카드</b></>:<img src={card.treasure!.image} alt={visible?card.treasure!.name:''}/>}</span></span></button>})}</div><div className="memory-actions"><Button onClick={hint} disabled={locked}>힌트 보기</Button><Button variant="outline" onClick={restart}>다시 하기</Button></div><div className="heritage-feedback" aria-live="polite">{message}</div>{complete&&<div className="activity-complete"><h2>문화재의 모습을 기억해 짝을 모두 찾았어요!</h2><Button onClick={onNext}>{count===8?'25장 다음 도전 →':'활동 선택으로'}</Button></div>}</section>;
 }
