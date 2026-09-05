@@ -65,19 +65,19 @@ function floodFill(context:CanvasRenderingContext2D,startX:number,startY:number,
       const crossing=(Math.sin((-x*.22+y+seed)/18)+1)/2;
       const pressure=.58+diagonal*.25+crossing*.17;
       blendWithWhite=.08+(1-pressure)*.48;
-      shade=.77+pressure*.27;
+      // 선택 색보다 어두운 띠가 생기지 않도록 밝은 종이결만 섞는다.
+      shade=1;
       const paperGrain=textureNoise(x*5,y*7,seed+17);
       if(paperGrain>.9)blendWithWhite=Math.min(.82,blendWithWhite+.32+(paperGrain-.9)*2.4);
-      if(textureNoise(x,y,seed+71)>.985)shade=.72;
     }else if(tool==='watercolor'){
       const wash=(Math.sin((x+seed)/43)+Math.sin((y-seed)/51)+2)/4;
       blendWithWhite=.25+wash*.22+noise*.06;
       const boundary=x===0||y===0||x===width-1||y===height-1||!visited[index-1]||!visited[index+1]||!visited[index-width]||!visited[index+width];
       shade=boundary?.78:.94+textureNoise(x,y,seed+43)*.12;
     }else{
-      const markerStroke=(Math.sin((x*.18+y+seed)/13)+1)/2;
-      shade=.92+markerStroke*.09;
-      blendWithWhite=.015+noise*.025;
+      // 싸인펜은 검은 줄무늬 없이 선택한 색을 선명하고 고르게 채운다.
+      shade=1;
+      blendWithWhite=.008+noise*.018;
     }
     data[offset]=Math.max(0,Math.min(255,mix(fill[0]*shade,255,blendWithWhite)));
     data[offset+1]=Math.max(0,Math.min(255,mix(fill[1]*shade,255,blendWithWhite)));
