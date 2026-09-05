@@ -53,13 +53,13 @@
 .label-tray{padding-top:20px}
 .label-tray .map-name-card{position:relative;background:#ffd95b!important;border:3px solid var(--ink)!important;box-shadow:0 5px 0 #c69b25!important}
 .label-tray .map-name-card::before{content:'↑';position:absolute;left:50%;top:-27px;transform:translateX(-50%);color:#7d6328;font-size:23px;font-weight:950}
-.map-label-callout line{stroke:#6c5632;stroke-width:4;stroke-linecap:round}
-.map-label-callout rect{fill:#ffd95b;stroke:#202936;stroke-width:4}
+.map-label-callout line{stroke:#6c5632;stroke-width:5;stroke-linecap:round}
+.map-label-callout rect{fill:#ffd95b;stroke:#202936;stroke-width:5}
 .korea-puzzle-svg .map-label-callout text{font-size:22px;stroke:#fff3b6;stroke-width:4px}
 #map-label-arrow path{fill:#6c5632}
 .label-tray .map-name-card b{font-size:1.4rem}
-.korea-puzzle-svg .map-label-callout text{font-size:28px}
-.map-label-callout{cursor:pointer}.map-label-callout:focus-visible rect{stroke:#2878b8;stroke-width:7}
+.korea-puzzle-svg .map-label-callout text{font-size:31px;stroke-width:5px}
+.map-label-callout.interactive{cursor:pointer}.map-label-callout.interactive:focus-visible rect{stroke:#2878b8;stroke-width:7}.map-label-callout.placed-label{cursor:default}
 .menu-png-art{width:clamp(96px,9vw,145px);height:clamp(96px,9vw,145px);object-fit:contain;object-position:center;filter:drop-shadow(0 8px 0 rgba(0,0,0,.09))}
 .heritage-image{display:block;width:100%;height:100%;object-fit:contain;object-position:center;pointer-events:none}.heritage-target{aspect-ratio:1.1;filter:saturate(.76) brightness(.93) drop-shadow(0 3px 2px rgba(35,42,53,.2))}.heritage-target.found{filter:saturate(1) brightness(1.04) drop-shadow(0 0 10px #fff) drop-shadow(0 0 10px var(--yellow))}.heritage-target .heritage-image{width:100%;height:100%}.discovery-board{grid-template-columns:160px repeat(6,1fr)}.discovery-board article .heritage-image{width:82px;height:72px;filter:grayscale(1);opacity:.3}.discovery-board article.found .heritage-image{filter:none;opacity:1}@media(max-width:900px){.discovery-board{grid-template-columns:repeat(4,1fr)}}@media(max-width:620px){.discovery-board{grid-template-columns:repeat(2,1fr)}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
