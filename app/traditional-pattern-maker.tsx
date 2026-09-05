@@ -10,7 +10,8 @@ import './traditional-pattern-maker.css';
 
 type Props={home:()=>void;soundOn:boolean;toggleSound:()=>void};
 type Confirm='clear'|'change'|null;
-type FillAction={x:number;y:number;color:string};
+type ColoringTool='crayon'|'pastel'|'watercolor'|'marker';
+type FillAction={x:number;y:number;color:string;tool:ColoringTool};
 
 const palette=[
   ['빨강','#e7473c'],['주황','#ed8b32'],['노랑','#f2bd37'],['연두','#91c957'],['초록','#318b61'],['민트','#74d2b6'],
@@ -18,9 +19,23 @@ const palette=[
   ['분홍','#e879a9'],['진분홍','#c74378'],['갈색','#8a5a36'],['회색','#8b929b'],['검정','#232a35'],['흰색','#fffef9'],
 ] as const;
 
+const coloringTools:readonly {id:ColoringTool;name:string;icon:string;description:string}[]=[
+  {id:'crayon',name:'크레파스',icon:'🖍️',description:'도톰하고 까슬까슬하게 칠해져요.'},
+  {id:'pastel',name:'파스텔',icon:'▰',description:'부드럽고 보송보송하게 칠해져요.'},
+  {id:'watercolor',name:'물감',icon:'🎨',description:'맑고 살짝 번진 듯 칠해져요.'},
+  {id:'marker',name:'사인펜',icon:'🖊️',description:'선명하고 고르게 칠해져요.'},
+] as const;
+
 const rgb=(color:string)=>[Number.parseInt(color.slice(1,3),16),Number.parseInt(color.slice(3,5),16),Number.parseInt(color.slice(5,7),16)] as const;
 
-function floodFill(context:CanvasRenderingContext2D,startX:number,startY:number,color:string){
+const mix=(from:number,to:number,amount:number)=>Math.round(from+(to-from)*amount);
+const textureNoise=(x:number,y:number,seed:number)=>{
+  let value=Math.imul(x+seed,374761393)^Math.imul(y+seed,668265263);
+  value=Math.imul(value^(value>>>13),1274126177);
+  return ((value^(value>>>16))>>>0)/4294967295;
+};
+
+function floodFill(context:CanvasRenderingContext2D,startX:number,startY:number,color:string,tool:ColoringTool){
   const {width,height}=context.canvas;
   const image=context.getImageData(0,0,width,height);
   const data=image.data;
@@ -41,17 +56,37 @@ function floodFill(context:CanvasRenderingContext2D,startX:number,startY:number,
   add(startY*width+startX);
   while(head<tail){const index=queue[head++];const x=index%width,y=Math.floor(index/width);if(x===0||y===0||x===width-1||y===height-1)touchesEdge=true;if(x>0)add(index-1);if(x<width-1)add(index+1);if(y>0)add(index-width);if(y<height-1)add(index+width)}
   if(touchesEdge||tail<180)return false;
-  for(let i=0;i<tail;i++){const offset=queue[i]*4;data[offset]=fill[0];data[offset+1]=fill[1];data[offset+2]=fill[2];data[offset+3]=255}
+  const seed=startX*7+startY*13;
+  for(let i=0;i<tail;i++){
+    const index=queue[i],offset=index*4,x=index%width,y=Math.floor(index/width);
+    const noise=textureNoise(x,y,seed);
+    let blendWithWhite=0,shade=1;
+    if(tool==='crayon'){
+      shade=.91+noise*.14;
+      if(textureNoise(x*3,y*5,seed+17)>.965)blendWithWhite=.32;
+    }else if(tool==='pastel'){
+      blendWithWhite=.18+noise*.12;
+      shade=.97+textureNoise(x*2,y*2,seed+29)*.06;
+    }else if(tool==='watercolor'){
+      blendWithWhite=.28+noise*.1;
+      const boundary=x===0||y===0||x===width-1||y===height-1||!visited[index-1]||!visited[index+1]||!visited[index-width]||!visited[index+width];
+      shade=boundary?.9:.98+textureNoise(x,y,seed+43)*.06;
+    }
+    data[offset]=Math.max(0,Math.min(255,mix(fill[0]*shade,255,blendWithWhite)));
+    data[offset+1]=Math.max(0,Math.min(255,mix(fill[1]*shade,255,blendWithWhite)));
+    data[offset+2]=Math.max(0,Math.min(255,mix(fill[2]*shade,255,blendWithWhite)));
+    data[offset+3]=255;
+  }
   context.putImageData(image,0,0);
   return true;
 }
 
-function PatternCanvas({pattern,actions,color,canvasRef,onFill,onInvalid}:{pattern:TraditionalPattern;actions:FillAction[];color:string;canvasRef:React.RefObject<HTMLCanvasElement|null>;onFill:(action:FillAction)=>void;onInvalid:()=>void}){
+function PatternCanvas({pattern,actions,color,tool,canvasRef,onFill,onInvalid}:{pattern:TraditionalPattern;actions:FillAction[];color:string;tool:ColoringTool;canvasRef:React.RefObject<HTMLCanvasElement|null>;onFill:(action:FillAction)=>void;onInvalid:()=>void}){
   const imageRef=useRef<HTMLImageElement|null>(null);
   const [ready,setReady]=useState(false);
   useEffect(()=>{let active=true;setReady(false);const image=new Image();image.onload=()=>{if(!active)return;imageRef.current=image;const canvas=canvasRef.current;if(canvas){canvas.width=image.naturalWidth;canvas.height=image.naturalHeight}setReady(true)};image.src=pattern.preview;return()=>{active=false}},[pattern.preview,canvasRef]);
-  useEffect(()=>{if(!ready||!imageRef.current||!canvasRef.current)return;const canvas=canvasRef.current,context=canvas.getContext('2d',{willReadFrequently:true});if(!context)return;context.clearRect(0,0,canvas.width,canvas.height);context.drawImage(imageRef.current,0,0,canvas.width,canvas.height);actions.forEach(action=>floodFill(context,action.x,action.y,action.color))},[actions,ready,canvasRef]);
-  const fillAt=(event:React.PointerEvent<HTMLCanvasElement>)=>{const canvas=canvasRef.current,context=canvas?.getContext('2d',{willReadFrequently:true});if(!canvas||!context||!ready)return;const rect=canvas.getBoundingClientRect();const x=Math.max(0,Math.min(canvas.width-1,Math.floor((event.clientX-rect.left)/rect.width*canvas.width)));const y=Math.max(0,Math.min(canvas.height-1,Math.floor((event.clientY-rect.top)/rect.height*canvas.height)));if(floodFill(context,x,y,color))onFill({x,y,color});else onInvalid()};
+  useEffect(()=>{if(!ready||!imageRef.current||!canvasRef.current)return;const canvas=canvasRef.current,context=canvas.getContext('2d',{willReadFrequently:true});if(!context)return;context.clearRect(0,0,canvas.width,canvas.height);context.drawImage(imageRef.current,0,0,canvas.width,canvas.height);actions.forEach(action=>floodFill(context,action.x,action.y,action.color,action.tool))},[actions,ready,canvasRef]);
+  const fillAt=(event:React.PointerEvent<HTMLCanvasElement>)=>{const canvas=canvasRef.current,context=canvas?.getContext('2d',{willReadFrequently:true});if(!canvas||!context||!ready)return;const rect=canvas.getBoundingClientRect();const x=Math.max(0,Math.min(canvas.width-1,Math.floor((event.clientX-rect.left)/rect.width*canvas.width)));const y=Math.max(0,Math.min(canvas.height-1,Math.floor((event.clientY-rect.top)/rect.height*canvas.height)));if(floodFill(context,x,y,color,tool))onFill({x,y,color,tool});else onInvalid()};
   return <canvas ref={canvasRef} className="tp-coloring-canvas" role="img" aria-label={`${pattern.name} 색칠 그림`} onPointerUp={fillAt}/>;
 }
 
@@ -64,6 +99,7 @@ export default function TraditionalPatternMaker({home,soundOn,toggleSound}:Props
   const pattern=selectedId?patternById[selectedId]:null;
   const [actions,setActions]=useState<FillAction[]>([]);
   const [selectedColor,setSelectedColor]=useState<string>(palette[0][1]);
+  const [selectedTool,setSelectedTool]=useState<ColoringTool>('crayon');
   const [message,setMessage]=useState('마음에 드는 문양을 골라 보세요.');
   const [confirm,setConfirm]=useState<Confirm>(null);
   const [celebrate,setCelebrate]=useState(false);
@@ -75,5 +111,6 @@ export default function TraditionalPatternMaker({home,soundOn,toggleSound}:Props
   const returnToPicker=()=>{stopKoreanSpeech();setSelectedId(null);setActions([]);setConfirm(null);setMessage('마음에 드는 문양을 골라 보세요.')};
   const askForPicker=()=>hasColor?setConfirm('change'):returnToPicker();
   const save=async()=>{const artwork=artworkRef.current;if(!artwork)return;try{const output=document.createElement('canvas');output.width=1200;output.height=1200;const context=output.getContext('2d');if(!context)throw new Error('canvas');context.fillStyle='#fff';context.fillRect(0,0,1200,1200);context.drawImage(artwork,0,0,1200,1200);const png=await new Promise<Blob|null>(resolve=>output.toBlob(resolve,'image/png'));if(!png)throw new Error('png');const url=URL.createObjectURL(png);const link=document.createElement('a');link.href=url;link.download='우리나라_전통문양_색칠작품.png';link.hidden=true;document.body.appendChild(link);link.click();link.remove();window.setTimeout(()=>URL.revokeObjectURL(url),1200);setCelebrate(true);setMessage('멋진 전통문양을 완성했어요!');window.setTimeout(()=>setCelebrate(false),1000)}catch{setMessage('저장하지 못했어요. 다시 눌러주세요.')}};
-  return <main className="activity tp-app"><header className="topbar"><HomeIconButton onClick={home}/><div className="activity-title"><span>✿</span><h1>전통문양 색칠하기</h1><span>✿</span></div><SoundIconButton soundOn={soundOn} onClick={toggleSound} className="round-action sound-only"/></header>{!pattern?<PatternPicker onChoose={choose}/>:<section className="tp-coloring"><div className="tp-coloring-heading"><div><h2>{pattern.name}</h2><p className="tp-meaning">🔊 {pattern.meaning}</p><p aria-live="polite">{message}</p></div><Button variant="outline" onPointerUp={askForPicker}>다른 문양 고르기</Button></div><div className="tp-coloring-layout"><section className="tp-canvas-card"><PatternCanvas pattern={pattern} actions={actions} color={selectedColor} canvasRef={artworkRef} onFill={action=>{setActions(values=>[...values,action]);setMessage(`${palette.find(([,value])=>value===selectedColor)?.[0]??'고른 색'}으로 한 곳을 칠했어요.`)}} onInvalid={()=>setMessage('검은 선 말고 문양 안쪽을 눌러 보세요.')}/></section><aside className="tp-palette"><h3>무슨 색으로 칠할까요?</h3><div>{palette.map(([name,value])=><button key={name} type="button" aria-label={`${name} 선택`} aria-pressed={selectedColor===value} className={selectedColor===value?'active':''} onPointerUp={()=>{setSelectedColor(value);setMessage(`${name}을 골랐어요. 칠할 곳을 눌러 보세요.`)}}><span style={{background:value}}>{selectedColor===value?'✓':''}</span><b>{name}</b></button>)}</div></aside></div><div className="tp-actions"><Button variant="outline" onPointerUp={undo} disabled={!actions.length}>되돌리기</Button><Button variant="outline" onPointerUp={()=>setConfirm('clear')} disabled={!hasColor}>모두 지우기</Button><Button variant="outline" onPointerUp={askForPicker}>다른 문양 고르기</Button><Button className="tp-save" onPointerUp={save}>내 문양 저장하기</Button></div></section>}{confirm&&<dialog open className="tp-dialog"><div><h2>{confirm==='clear'?'색칠한 내용을 모두 지울까요?':'다른 문양을 고를까요?'}</h2><div className="tp-confirm"><Button variant="outline" onPointerUp={()=>setConfirm(null)}>계속 색칠하기</Button><Button onPointerUp={confirm==='clear'?clear:returnToPicker}>{confirm==='clear'?'모두 지우기':'다른 문양 고르기'}</Button></div></div></dialog>}{celebrate&&<div className="tp-complete" aria-live="polite"><div>★　✿　★</div><strong>멋진 전통문양을 완성했어요!</strong></div>}</main>;
+  const activeTool=coloringTools.find(item=>item.id===selectedTool)!;
+  return <main className="activity tp-app"><header className="topbar"><HomeIconButton onClick={home}/><div className="activity-title"><span>✿</span><h1>전통문양 색칠하기</h1><span>✿</span></div><SoundIconButton soundOn={soundOn} onClick={toggleSound} className="round-action sound-only"/></header>{!pattern?<PatternPicker onChoose={choose}/>:<section className="tp-coloring"><div className="tp-coloring-heading"><div><h2>{pattern.name}</h2><p className="tp-meaning">🔊 {pattern.meaning}</p><p aria-live="polite">{message}</p></div><Button variant="outline" onPointerUp={askForPicker}>다른 문양 고르기</Button></div><div className="tp-coloring-layout"><section className="tp-canvas-card"><PatternCanvas pattern={pattern} actions={actions} color={selectedColor} tool={selectedTool} canvasRef={artworkRef} onFill={action=>{setActions(values=>[...values,action]);setMessage(`${activeTool.name}로 ${palette.find(([,value])=>value===selectedColor)?.[0]??'고른 색'}을 칠했어요.`)}} onInvalid={()=>setMessage('검은 선 말고 문양 안쪽을 눌러 보세요.')}/></section><aside className="tp-palette"><section className="tp-tools" aria-label="색칠 도구 선택"><h3>무엇으로 칠할까요?</h3><div>{coloringTools.map(item=><button key={item.id} type="button" aria-label={`${item.name} 선택`} aria-pressed={selectedTool===item.id} className={selectedTool===item.id?'active':''} onPointerUp={()=>{setSelectedTool(item.id);setMessage(`${item.name}을 골랐어요. ${item.description}`)}}><span aria-hidden="true">{item.icon}</span><b>{item.name}</b></button>)}</div><p>{activeTool.description}</p></section><h3>무슨 색으로 칠할까요?</h3><div className="tp-color-grid">{palette.map(([name,value])=><button key={name} type="button" aria-label={`${name} 선택`} aria-pressed={selectedColor===value} className={selectedColor===value?'active':''} onPointerUp={()=>{setSelectedColor(value);setMessage(`${name}을 골랐어요. 칠할 곳을 눌러 보세요.`)}}><span style={{background:value}}>{selectedColor===value?'✓':''}</span><b>{name}</b></button>)}</div></aside></div><div className="tp-actions"><Button variant="outline" onPointerUp={undo} disabled={!actions.length}>되돌리기</Button><Button variant="outline" onPointerUp={()=>setConfirm('clear')} disabled={!hasColor}>모두 지우기</Button><Button variant="outline" onPointerUp={askForPicker}>다른 문양 고르기</Button><Button className="tp-save" onPointerUp={save}>내 문양 저장하기</Button></div></section>}{confirm&&<dialog open className="tp-dialog"><div><h2>{confirm==='clear'?'색칠한 내용을 모두 지울까요?':'다른 문양을 고를까요?'}</h2><div className="tp-confirm"><Button variant="outline" onPointerUp={()=>setConfirm(null)}>계속 색칠하기</Button><Button onPointerUp={confirm==='clear'?clear:returnToPicker}>{confirm==='clear'?'모두 지우기':'다른 문양 고르기'}</Button></div></div></dialog>}{celebrate&&<div className="tp-complete" aria-live="polite"><div>★　✿　★</div><strong>멋진 전통문양을 완성했어요!</strong></div>}</main>;
 }
