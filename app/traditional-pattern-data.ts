@@ -10,7 +10,7 @@ export type TraditionalPattern={
 const regions=(paths:string[])=>paths.map((path,index)=>({id:`region-${index+1}`,path}));
 
 export const traditionalPatterns:readonly TraditionalPattern[]=[
-  {id:'lotus',name:'연꽃문양',preview:'/traditional-patterns/lotus-pattern.png',regions:regions([
+  {id:'lotus',name:'연꽃문양',preview:'/traditional-patterns/generated-v2/lotus-pattern-v2.png',regions:regions([
     'M50 42A8 8 0 1 1 50 58A8 8 0 1 1 50 42Z',
     'M47 40C39 31 41 20 50 12C59 20 61 31 53 40C51 42 49 42 47 40Z',
     'M58 43C60 31 70 25 81 27C82 39 75 48 62 49C59 49 57 46 58 43Z',
@@ -21,7 +21,7 @@ export const traditionalPatterns:readonly TraditionalPattern[]=[
     'M33 39C24 36 17 28 18 18C29 17 37 23 40 33C40 37 37 40 33 39Z',
     'M67 39C63 40 60 37 60 33C63 23 71 17 82 18C83 28 76 36 67 39Z',
   ])},
-  {id:'cloud',name:'구름문양',preview:'/traditional-patterns/cloud-pattern.png',regions:regions([
+  {id:'cloud',name:'구름문양',preview:'/traditional-patterns/generated-v2/cloud-pattern-v2.png',regions:regions([
     'M12 54C7 45 13 35 23 35C25 24 37 19 46 26C54 15 70 18 74 31C87 30 94 42 88 52C97 61 89 74 77 72H24C13 73 6 63 12 54Z',
     'M21 52C17 45 22 39 29 40C28 33 36 28 42 33C48 38 43 47 36 46C33 53 27 57 21 52Z',
     'M43 35C44 27 54 23 61 28C68 32 66 42 59 45C51 48 43 43 43 35Z',
@@ -30,7 +30,7 @@ export const traditionalPatterns:readonly TraditionalPattern[]=[
     'M17 78C28 69 39 72 47 80C35 79 28 88 17 78Z',
     'M53 81C63 70 78 70 87 80C75 78 67 91 53 81Z',
   ])},
-  {id:'taegeuk',name:'태극문양',preview:'/traditional-patterns/taegeuk-pattern.png',regions:regions([
+  {id:'taegeuk',name:'태극문양',preview:'/traditional-patterns/generated-v2/taegeuk-pattern-v2.png',regions:regions([
     'M50 20A30 30 0 0 1 50 80C62 71 62 60 50 52C38 44 38 31 50 20Z',
     'M50 20A30 30 0 0 0 50 80C38 71 38 60 50 52C62 44 62 31 50 20Z',
     'M18 13L34 13L34 19L18 19Z',
@@ -38,7 +38,7 @@ export const traditionalPatterns:readonly TraditionalPattern[]=[
     'M18 81L34 81L34 87L18 87Z',
     'M66 81L82 81L82 87L66 87Z',
   ])},
-  {id:'dancheong',name:'단청꽃문양',preview:'/traditional-patterns/dancheong-flower-pattern.png',regions:regions([
+  {id:'dancheong',name:'단청꽃문양',preview:'/traditional-patterns/generated-v2/dancheong-flower-pattern-v2.png',regions:regions([
     'M50 43A7 7 0 1 1 50 57A7 7 0 1 1 50 43Z',
     'M47 40C41 33 43 23 50 18C57 23 59 33 53 40C51 42 49 42 47 40Z',
     'M59 45C60 36 69 31 78 34C79 43 72 51 63 51C60 51 58 48 59 45Z',
@@ -53,7 +53,7 @@ export const traditionalPatterns:readonly TraditionalPattern[]=[
     'M18 62C18 72 24 79 33 82C36 73 40 68 46 64C35 66 25 66 18 62Z',
     'M20 31C13 36 11 44 14 52C21 48 28 48 35 52C28 44 23 38 20 31Z',
   ])},
-  {id:'butterfly',name:'나비문양',preview:'/traditional-patterns/butterfly-pattern.png',regions:regions([
+  {id:'butterfly',name:'나비문양',preview:'/traditional-patterns/generated-v2/butterfly-pattern-v2.png',regions:regions([
     'M47 33C48 27 52 27 53 33L56 70C54 79 46 79 44 70Z',
     'M44 45C35 21 12 20 14 44C16 58 31 62 44 53Z',
     'M56 45C65 21 88 20 86 44C84 58 69 62 56 53Z',
@@ -66,7 +66,7 @@ export const traditionalPatterns:readonly TraditionalPattern[]=[
     'M43 29C37 24 34 20 35 15C42 17 46 22 48 28Z',
     'M57 29C63 24 66 20 65 15C58 17 54 22 52 28Z',
   ])},
-  {id:'crane',name:'학문양',preview:'/traditional-patterns/crane-pattern.png',regions:regions([
+  {id:'crane',name:'학문양',preview:'/traditional-patterns/generated-v2/crane-pattern-v2.png',regions:regions([
     'M25 65C37 49 52 43 67 47C75 49 80 43 84 35C88 47 81 58 69 60C53 63 43 72 33 84Z',
     'M47 51C36 34 39 20 52 14C49 29 57 39 69 46C60 44 54 47 47 51Z',
     'M68 47C72 35 80 25 88 24C86 34 84 42 78 49Z',
@@ -77,7 +77,7 @@ export const traditionalPatterns:readonly TraditionalPattern[]=[
     'M15 31C20 23 30 23 35 31C28 29 24 38 15 31Z',
     'M64 79C72 70 84 71 90 80C80 77 74 88 64 79Z',
   ])},
-  {id:'pine',name:'소나무문양',preview:'/traditional-patterns/pine-pattern.png',regions:regions([
+  {id:'pine',name:'소나무문양',preview:'/traditional-patterns/generated-v2/pine-pattern-v2.png',regions:regions([
     'M44 45H56L60 90H40Z',
     'M50 10C37 10 29 18 27 29C38 25 45 28 50 35C55 28 62 25 73 29C71 18 63 10 50 10Z',
     'M31 29C19 31 14 40 16 51C26 45 36 46 43 53C43 41 39 34 31 29Z',
@@ -88,7 +88,7 @@ export const traditionalPatterns:readonly TraditionalPattern[]=[
     'M11 87C23 82 31 84 38 91H14Z',
     'M62 91C69 84 77 82 89 87L86 91Z',
   ])},
-  {id:'peony',name:'모란문양',preview:'/traditional-patterns/peony-pattern.png',regions:regions([
+  {id:'peony',name:'모란문양',preview:'/traditional-patterns/generated-v2/peony-pattern-v2.png',regions:regions([
     'M50 42A8 8 0 1 1 50 58A8 8 0 1 1 50 42Z',
     'M47 40C39 32 41 20 50 14C59 20 61 32 53 40C51 42 49 42 47 40Z',
     'M58 43C61 31 72 27 82 32C81 44 72 50 62 50C59 50 57 47 58 43Z',
@@ -100,7 +100,7 @@ export const traditionalPatterns:readonly TraditionalPattern[]=[
     'M33 74C23 73 16 79 15 89C26 91 35 85 39 76Z',
     'M67 74C77 73 84 79 85 89C74 91 65 85 61 76Z',
   ])},
-  {id:'wave',name:'물결문양',preview:'/traditional-patterns/wave-pattern.png',regions:regions([
+  {id:'wave',name:'물결문양',preview:'/traditional-patterns/generated-v2/wave-pattern-v2.png',regions:regions([
     'M8 24C16 14 24 14 32 24C40 34 48 34 56 24C64 14 72 14 80 24C86 31 90 31 94 27L94 38C86 43 78 39 72 31C64 21 58 39 48 39C38 39 32 21 24 31C18 39 12 43 8 38Z',
     'M8 45C16 35 24 35 32 45C40 55 48 55 56 45C64 35 72 35 80 45C86 52 90 52 94 48L94 59C86 64 78 60 72 52C64 42 58 60 48 60C38 60 32 42 24 52C18 60 12 64 8 59Z',
     'M8 66C16 56 24 56 32 66C40 76 48 76 56 66C64 56 72 56 80 66C86 73 90 73 94 69L94 80C86 85 78 81 72 73C64 63 58 81 48 81C38 81 32 63 24 73C18 81 12 85 8 80Z',
@@ -108,7 +108,7 @@ export const traditionalPatterns:readonly TraditionalPattern[]=[
     'M43 39A6 6 0 1 1 43 51A6 6 0 1 1 43 39Z',
     'M72 60A6 6 0 1 1 72 72A6 6 0 1 1 72 60Z',
   ])},
-  {id:'chrysanthemum',name:'국화문양',preview:'/traditional-patterns/chrysanthemum-pattern.png',regions:regions([
+  {id:'chrysanthemum',name:'국화문양',preview:'/traditional-patterns/generated-v2/chrysanthemum-pattern-v2.png',regions:regions([
     'M50 43A7 7 0 1 1 50 57A7 7 0 1 1 50 43Z',
     'M47 40C42 30 44 18 50 12C56 18 58 30 53 40C52 43 48 43 47 40Z',
     'M56 41C57 29 66 20 74 19C76 29 70 40 61 46C58 48 55 45 56 41Z',
