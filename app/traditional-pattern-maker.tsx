@@ -1,63 +1,96 @@
 'use client';
 
-import {useRef,useState} from 'react';
+import {useMemo,useState} from 'react';
 import {Button} from '@/components/ui/button';
 import HomeIconButton from './home-icon-button';
 import SoundIconButton from './sound-icon-button';
+import {patternById,traditionalPatterns,type TraditionalPattern,type TraditionalPatternId} from './traditional-pattern-data';
 import './traditional-pattern-maker.css';
 
 type Props={home:()=>void;soundOn:boolean;toggleSound:()=>void};
-type Kind='lotus'|'cloud'|'taegeuk'|'dancheong'|'butterfly'|'crane'|'pine'|'peony'|'wave'|'chrysanthemum';
-type Symmetry='free'|'horizontal'|'vertical'|'four'|'radial';
-type PatternObject={id:string;kind:Kind;x:number;y:number;size:number;rotation:number;flipX:number;flipY:number;fills:string[]};
-type Background='white'|'hanji'|'sky'|'pink'|'yellow'|'green';
-type Snapshot={objects:PatternObject[];background:Background};
+type Confirm='clear'|'change'|null;
+type RegionColors=Record<string,string>;
 
-const shapes:Record<Kind,{name:string;paths:string[]}>= {
- lotus:{name:'연꽃',paths:['M50 48C35 38 34 21 50 8C66 21 65 38 50 48Z','M47 52C29 54 16 43 18 25C35 25 47 35 47 52Z','M53 52C71 54 84 43 82 25C65 25 53 35 53 52Z','M50 53C38 60 35 76 50 91C65 76 62 60 50 53Z']},
- cloud:{name:'구름',paths:['M13 59C6 47 17 35 30 39C30 23 50 18 59 31C71 23 88 33 84 48C96 54 88 72 74 68H24C16 68 11 64 13 59Z','M25 57C35 48 47 49 53 57C61 45 76 45 83 56C72 52 67 65 56 63C48 75 33 69 25 57Z']},
- taegeuk:{name:'태극',paths:['M50 8A42 42 0 0 1 50 92C63 80 61 66 50 57C39 48 37 34 50 8Z','M50 8A42 42 0 0 0 50 92C37 80 39 66 50 57C61 48 63 34 50 8Z']},
- dancheong:{name:'단청꽃',paths:['M50 46C38 34 39 17 50 8C61 17 62 34 50 46Z','M54 49C66 37 83 38 92 49C83 60 66 61 54 49Z','M50 54C62 66 61 83 50 92C39 83 38 66 50 54Z','M46 49C34 61 17 60 8 49C17 38 34 37 46 49Z','M50 35C70 35 70 65 50 65C30 65 30 35 50 35Z']},
- butterfly:{name:'나비',paths:['M46 47C31 17 8 20 14 46C18 61 33 62 46 53Z','M54 47C69 17 92 20 86 46C82 61 67 62 54 53Z','M46 55C28 56 22 77 38 86C48 78 49 68 46 55Z','M54 55C72 56 78 77 62 86C52 78 51 68 54 55Z','M47 38C48 32 52 32 53 38L56 70C54 79 46 79 44 70Z']},
- crane:{name:'학',paths:['M22 69C35 49 50 43 67 47C76 49 82 43 88 32C89 47 82 58 69 60C52 63 42 75 31 87Z','M55 49C44 29 47 16 58 8C56 26 64 35 76 41C68 40 62 43 55 49Z','M38 70L45 70L42 93L36 93Z']},
- pine:{name:'소나무',paths:['M45 52H55L59 94H41Z','M50 7L24 42H76Z','M50 21L16 59H84Z','M50 37L9 77H91Z']},
- peony:{name:'모란',paths:['M50 48C32 42 28 26 39 16C49 20 53 31 50 48Z','M52 48C55 29 68 20 80 27C80 41 69 49 52 48Z','M53 52C70 48 82 58 78 73C65 79 55 68 53 52Z','M48 53C46 72 33 81 21 72C20 58 31 50 48 53Z','M50 37C68 37 68 64 50 64C32 64 32 37 50 37Z']},
- wave:{name:'물결',paths:['M7 35C18 20 29 20 40 35C51 50 62 50 73 35C82 23 89 23 95 30L95 47C84 34 75 35 66 48C52 66 38 63 26 47C18 37 12 38 7 44Z','M7 61C18 48 28 48 39 61C50 74 61 74 72 61C82 49 89 49 95 56L95 71C84 61 76 62 66 74C51 90 37 86 25 73C17 64 12 65 7 70Z']},
- chrysanthemum:{name:'국화',paths:['M50 45C39 34 40 18 50 9C60 18 61 34 50 45Z','M55 47C57 31 71 22 83 28C84 42 72 49 55 47Z','M55 53C72 51 84 59 82 73C70 79 57 69 55 53Z','M50 56C61 68 59 84 49 92C39 83 39 67 50 56Z','M45 53C42 69 29 78 17 71C17 57 29 50 45 53Z','M45 47C28 49 17 41 19 27C31 21 44 31 45 47Z','M50 38C66 38 66 63 50 63C34 63 34 38 50 38Z']},
-};
-const kinds=Object.keys(shapes) as Kind[];
-const palette=[['빨강','#e7473c'],['주황','#ed8b32'],['노랑','#f2bd37'],['초록','#318b61'],['청록','#198f91'],['파랑','#2878b8'],['보라','#79538c'],['분홍','#e879a9'],['갈색','#8a5a36'],['검정','#232a35'],['흰색','#fffef9']] as const;
-const backgrounds:Record<Background,{name:string;color:string}>={white:{name:'하얀 바탕',color:'#fffef9'},hanji:{name:'한지 바탕',color:'#f7efd9'},sky:{name:'하늘색 바탕',color:'#dff1f6'},pink:{name:'분홍색 바탕',color:'#f9e2ea'},yellow:{name:'노란색 바탕',color:'#fff3bf'},green:{name:'초록색 바탕',color:'#e1f2df'}};
-const positions:[[number,number],...Array<[number,number]>]=[[50,37.5],[27,24],[73,24],[28,53],[72,53],[50,18],[50,58],[18,38],[82,38],[37,36],[63,38],[50,38]];
-const clone=<T,>(value:T):T=>structuredClone(value);
-const clamp=(value:number,min:number,max:number)=>Math.max(min,Math.min(max,value));
+const WHITE='#fffef9';
+const palette=[
+  ['빨강','#e7473c'],['주황','#ed8b32'],['노랑','#f2bd37'],['연두','#91c957'],['초록','#318b61'],['민트','#74d2b6'],
+  ['청록','#198f91'],['하늘','#67b9df'],['파랑','#2878b8'],['남색','#263f78'],['보라','#79538c'],['연보라','#aa86c5'],
+  ['분홍','#e879a9'],['진분홍','#c74378'],['갈색','#8a5a36'],['회색','#8b929b'],['검정','#232a35'],['흰색',WHITE],
+] as const;
 
-function PatternSvg({kind,fills,onFill}:{kind:Kind;fills:string[];onFill?:(index:number)=>void}){return <svg viewBox="0 0 100 100" aria-hidden="true">{shapes[kind].paths.map((path,index)=><path key={index} d={path} fill={fills[index]??'none'} stroke="#232a35" strokeWidth="2.8" strokeLinejoin="round" vectorEffect="non-scaling-stroke" pointerEvents={onFill?'all':'none'} onPointerDown={event=>{if(!onFill)return;event.stopPropagation();event.preventDefault();onFill(index)}}/>)}</svg>}
+const emptyColors=(pattern:TraditionalPattern):RegionColors=>Object.fromEntries(pattern.regions.map(region=>[region.id,WHITE]));
+
+function PatternSvg({pattern,colors,interactive=false,onFill}:{pattern:TraditionalPattern;colors:RegionColors;interactive?:boolean;onFill?:(regionId:string)=>void}){
+  return <svg className="tp-coloring-svg" viewBox="0 0 100 100" role={interactive?'img':undefined} aria-label={interactive?`${pattern.name} 색칠 그림`:undefined} aria-hidden={interactive?undefined:true}>
+    {pattern.regions.map(region=><path key={region.id} data-region-id={region.id} d={region.path} fill={colors[region.id]??WHITE} stroke="#232a35" strokeWidth="2.8" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" pointerEvents={interactive?'visibleFill':'none'} onPointerUp={event=>{if(!interactive||!onFill)return;event.preventDefault();event.stopPropagation();onFill(region.id)}}/>)}
+  </svg>;
+}
+
+function PatternPicker({onChoose}:{onChoose:(id:TraditionalPatternId)=>void}){
+  return <section className="tp-picker">
+    <div className="tp-heading"><h2>마음에 드는 전통문양을 골라 아름다운 색으로 꾸며 보아요.</h2><p>문양 카드를 한 번 눌러 시작해요.</p></div>
+    <div className="tp-pattern-grid">{traditionalPatterns.map(pattern=><button key={pattern.id} type="button" onPointerUp={()=>onChoose(pattern.id)}><img src={pattern.preview} alt={`${pattern.name} 선 그림`}/><strong>{pattern.name}</strong></button>)}</div>
+  </section>;
+}
 
 export default function TraditionalPatternMaker({home,soundOn,toggleSound}:Props){
- const [present,setPresent]=useState<Snapshot>({objects:[],background:'white'});const [undo,setUndo]=useState<Snapshot[]>([]);const [redo,setRedo]=useState<Snapshot[]>([]);const [selected,setSelected]=useState<string|null>(null);const [color,setColor]=useState('#e7473c');const [symmetry,setSymmetry]=useState<Symmetry>('free');const [message,setMessage]=useState('문양을 고르고, 색을 누른 뒤 칠할 곳을 눌러 보세요.');const [celebrate,setCelebrate]=useState(false);
- const boardRef=useRef<HTMLDivElement>(null);const drag=useRef<{id:string;pointerId:number;dx:number;dy:number;base:Snapshot}|null>(null);const lastRepeat=useRef(0);const nextId=useRef(1);
- const commit=(make:(current:Snapshot)=>Snapshot)=>setPresent(current=>{setUndo(history=>[...history,clone(current)].slice(-60));setRedo([]);return make(clone(current))});
- const addPattern=(kind:Kind)=>{const [x,y]=positions[present.objects.length%positions.length];const fills=shapes[kind].paths.map(()=>'none');const object:PatternObject={id:`pattern-${nextId.current++}`,kind,x,y,size:18,rotation:0,flipX:1,flipY:1,fills};commit(current=>({...current,objects:[...current.objects,object]}));setSelected(object.id);setSymmetry('free');setMessage(`${shapes[kind].name}을 놓았어요. 색을 고르고 안쪽을 눌러 칠해 보세요.`)};
- const changeSelected=(change:(object:PatternObject)=>PatternObject)=>{if(!selected){setMessage('먼저 문양을 하나 골라주세요.');return}commit(current=>({...current,objects:current.objects.map(object=>object.id===selected?change(object):object)}))};
- const applySymmetry=(mode:Symmetry)=>{setSymmetry(mode);if(mode==='free')return;if(lastRepeat.current)return;lastRepeat.current=1;window.setTimeout(()=>{lastRepeat.current=0},450);const source=present.objects.find(object=>object.id===selected);if(!source){setMessage('먼저 문양을 하나 골라주세요.');return}let copies:PatternObject[]=[];const copy=(values:Partial<PatternObject>)=>({...clone(source),id:`pattern-${nextId.current++}`,...values,fills:shapes[source.kind].paths.map(()=>'none')});if(mode==='horizontal')copies=[copy({x:100-source.x,flipX:-source.flipX})];if(mode==='vertical')copies=[copy({y:75-source.y,flipY:-source.flipY})];if(mode==='four'){const radius=clamp(27-source.size/3,14,23);copies=[copy({x:50-radius,y:37.5}),copy({x:50+radius,y:37.5}),copy({x:50,y:37.5-radius}),copy({x:50,y:37.5+radius})]};if(mode==='radial'){const radius=clamp(31-source.size/2,16,24);copies=Array.from({length:8},(_,i)=>{const a=i*Math.PI/4;return copy({x:50+Math.cos(a)*radius,y:37.5+Math.sin(a)*radius,rotation:source.rotation+i*45})})}commit(current=>({...current,objects:[...current.objects,...copies]}));setMessage(`${shapes[source.kind].name} 선 그림만 ${mode==='horizontal'?'양옆에':mode==='vertical'?'위아래에':mode==='four'?'네 곳에':'동그랗게'} 놓았어요. 원하는 곳을 칠해 보세요.`)};
- const point=(event:React.PointerEvent)=>{const rect=boardRef.current?.getBoundingClientRect();if(!rect)return null;return{x:clamp((event.clientX-rect.left)/rect.width*100,0,100),y:clamp((event.clientY-rect.top)/rect.height*75,0,75)}};
- const boardDown=(event:React.PointerEvent)=>{if(event.target===event.currentTarget)setSelected(null)};
- const boardMove=(event:React.PointerEvent)=>{const p=point(event);if(!p||drag.current?.pointerId!==event.pointerId)return;const active=drag.current;setPresent(current=>({...current,objects:current.objects.map(object=>object.id===active.id?{...object,x:clamp(p.x-active.dx,object.size/2,100-object.size/2),y:clamp(p.y-active.dy,object.size/2*.75,75-object.size/2*.75)}:object)}));event.preventDefault()};
- const boardUp=(event:React.PointerEvent)=>{const active=drag.current;if(active?.pointerId!==event.pointerId)return;setUndo(history=>[...history,active.base].slice(-60));setRedo([]);drag.current=null};
- const objectDown=(object:PatternObject,event:React.PointerEvent)=>{setSelected(object.id);const p=point(event);if(!p)return;drag.current={id:object.id,pointerId:event.pointerId,dx:p.x-object.x,dy:p.y-object.y,base:clone(present)};event.currentTarget.setPointerCapture(event.pointerId);event.stopPropagation();event.preventDefault()};
- const fillRegion=(id:string,index:number)=>{setSelected(id);commit(current=>({...current,objects:current.objects.map(object=>object.id===id?{...object,fills:object.fills.map((fill,i)=>i===index?color:fill)}:object)}));setMessage(`${palette.find(([,value])=>value===color)?.[0]??'고른 색'}으로 칠했어요.`)};
- const undoOnce=()=>{const previous=undo.at(-1);if(!previous)return;setRedo(values=>[clone(present),...values].slice(0,60));setPresent(clone(previous));setUndo(values=>values.slice(0,-1));setSelected(null)};
- const redoOnce=()=>{const next=redo[0];if(!next)return;setUndo(values=>[...values,clone(present)].slice(-60));setPresent(clone(next));setRedo(values=>values.slice(1));setSelected(null)};
- const backgroundStyle=present.background==='hanji'?undefined:{background:backgrounds[present.background].color};
- const exportSvg=()=>{const bg=backgrounds[present.background].color;const texture=present.background==='hanji'?'<filter id="paper"><feTurbulence baseFrequency=".035" numOctaves="3" seed="8"/><feColorMatrix values="0 0 0 0 .72 0 0 0 0 .62 0 0 0 0 .43 0 0 0 0 .07 0"/></filter>':'';const patternMarkup=present.objects.map(object=>`<g transform="translate(${object.x*16} ${object.y*16}) rotate(${object.rotation}) scale(${object.flipX} ${object.flipY})"><svg x="${-object.size*8}" y="${-object.size*8}" width="${object.size*16}" height="${object.size*16}" viewBox="0 0 100 100">${shapes[object.kind].paths.map((d,i)=>`<path d="${d}" fill="${object.fills[i]}" stroke="#232a35" stroke-width="2.8" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`).join('')}</svg></g>`).join('');return `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200" viewBox="0 0 1600 1200"><defs>${texture}</defs><rect width="1600" height="1200" fill="${bg}"/>${present.background==='hanji'?'<rect width="1600" height="1200" filter="url(#paper)" opacity=".55"/>':''}${patternMarkup}</svg>`};
- const save=async()=>{try{const blob=new Blob([exportSvg()],{type:'image/svg+xml'});const url=URL.createObjectURL(blob);const image=new Image();await new Promise<void>((resolve,reject)=>{image.onload=()=>resolve();image.onerror=()=>reject(new Error('image'));image.src=url});const canvas=document.createElement('canvas');canvas.width=1600;canvas.height=1200;const context=canvas.getContext('2d');if(!context)throw new Error('canvas');context.drawImage(image,0,0);URL.revokeObjectURL(url);const png=await new Promise<Blob|null>(resolve=>canvas.toBlob(resolve,'image/png'));if(!png)throw new Error('png');const link=document.createElement('a');link.download='우리나라_전통문양_작품.png';link.href=URL.createObjectURL(png);link.hidden=true;document.body.appendChild(link);link.click();link.remove();window.setTimeout(()=>URL.revokeObjectURL(link.href),1000);setCelebrate(true);setMessage('멋진 전통문양을 완성했어요!');window.setTimeout(()=>setCelebrate(false),1800)}catch{setMessage('저장하지 못했어요. 다시 눌러주세요.')}};
- const clearAll=()=>{if(!present.objects.length){setMessage('지울 문양이 없어요.');return}commit(current=>({...current,objects:[]}));setSelected(null);setMessage('문양을 모두 지웠어요. 되돌리기를 누르면 다시 볼 수 있어요.')};
- return <main className="activity tp-app"><header className="topbar"><HomeIconButton onClick={home}/><div className="activity-title"><span>✿</span><h1>전통문양 만들기</h1><span>✿</span></div><SoundIconButton soundOn={soundOn} onClick={toggleSound} className="round-action sound-only"/></header><section className="tp-heading"><h2>문양을 고른 뒤, 색을 선택하고 칠하고 싶은 곳을 눌러 보세요.</h2><p aria-live="polite">{message}</p></section><section className="tp-layout">
-  <aside className="tp-panel tp-patterns"><h3>어떤 문양을 놓을까요?</h3><div>{kinds.map(kind=><button key={kind} onClick={()=>addPattern(kind)}><PatternSvg kind={kind} fills={shapes[kind].paths.map(()=>'none')}/><b>{shapes[kind].name}</b></button>)}</div></aside>
-  <section className="tp-work"><div className="tp-symmetry" aria-label="문양 놓는 방법">{([['free','하나만 놓기'],['horizontal','양옆에 똑같이'],['vertical','위아래 똑같이'],['four','네 곳에 똑같이'],['radial','동그랗게 놓기']] as [Symmetry,string][]).map(([mode,label])=><button key={mode} className={symmetry===mode?'active':''} onClick={()=>applySymmetry(mode)}>{symmetry===mode&&<span>✓</span>}{label}</button>)}</div><div ref={boardRef} className={`tp-board bg-${present.background}`} style={backgroundStyle} onPointerDown={boardDown} onPointerMove={boardMove} onPointerUp={boardUp} onPointerCancel={boardUp}>
-   {present.objects.map(object=><button key={object.id} type="button" aria-label={`${shapes[object.kind].name} 문양`} className={`tp-object ${selected===object.id?'selected':''}`} style={{left:`${object.x}%`,top:`${object.y/75*100}%`,width:`${object.size}%`,transform:`translate(-50%,-50%) rotate(${object.rotation}deg) scale(${object.flipX},${object.flipY})`}} onPointerDown={event=>objectDown(object,event)} onKeyDown={event=>{if(event.key==='Delete'){setSelected(object.id);window.setTimeout(()=>commit(current=>({...current,objects:current.objects.filter(value=>value.id!==object.id)})),0)}}}><PatternSvg kind={object.kind} fills={object.fills} onFill={index=>fillRegion(object.id,index)}/></button>)}
-  </div><div className="tp-board-actions"><button onClick={()=>changeSelected(o=>({...o,size:clamp(o.size-3,10,36)}))}>조금 작게</button><button onClick={()=>changeSelected(o=>({...o,size:clamp(o.size+3,10,36)}))}>조금 크게</button><button onClick={clearAll} disabled={!present.objects.length}>지우기</button><button onClick={undoOnce} disabled={!undo.length}>되돌리기</button><button onClick={redoOnce} disabled={!redo.length}>다시 바꾸기</button></div></section>
-  <aside className="tp-panel tp-tools"><h3>무슨 색으로 칠할까요?</h3><p className="tp-color-help">색을 고른 다음 원하는 문양의 원하는 부분을 눌러요.</p><div className="tp-colors">{palette.map(([name,value])=><button key={name} aria-label={`${name} 선택`} className={color===value?'active':''} onClick={()=>{setColor(value);setMessage(`${name}을 골랐어요. 원하는 곳을 눌러 칠해 보세요.`)}}><span className="tp-color-dot" style={{background:value}}>{color===value&&'✓'}</span><b>{name}</b></button>)}</div><Button className="tp-save" onClick={save}>내 그림 저장하기</Button></aside>
- </section>{celebrate&&<div className="tp-complete" aria-live="polite"><div>★　✿　★</div><strong>멋진 전통문양을 완성했어요!</strong></div>}</main>;
+  const [selectedId,setSelectedId]=useState<TraditionalPatternId|null>(null);
+  const pattern=selectedId?patternById[selectedId]:null;
+  const [colors,setColors]=useState<RegionColors>({});
+  const [history,setHistory]=useState<RegionColors[]>([]);
+  const [selectedColor,setSelectedColor]=useState<string>(palette[0][1]);
+  const [message,setMessage]=useState('마음에 드는 문양을 골라 보세요.');
+  const [confirm,setConfirm]=useState<Confirm>(null);
+  const [celebrate,setCelebrate]=useState(false);
+  const hasColor=useMemo(()=>Object.values(colors).some(value=>value!==WHITE),[colors]);
+
+  const choose=(id:TraditionalPatternId)=>{
+    const next=patternById[id];
+    setSelectedId(id);setColors(emptyColors(next));setHistory([]);setConfirm(null);
+    setMessage(`${next.name}을 골랐어요. 색을 고르고 칠할 곳을 눌러 보세요.`);
+  };
+  const fill=(regionId:string)=>{
+    if(!pattern||colors[regionId]===selectedColor)return;
+    setHistory(previous=>[...previous,colors]);
+    setColors(previous=>({...previous,[regionId]:selectedColor}));
+    setMessage(`${palette.find(([,value])=>value===selectedColor)?.[0]??'고른 색'}으로 한 곳을 칠했어요.`);
+  };
+  const undo=()=>{
+    const previous=history.at(-1);if(!previous)return;
+    setColors(previous);setHistory(values=>values.slice(0,-1));setMessage('방금 칠한 곳을 되돌렸어요.');
+  };
+  const clear=()=>{
+    if(!pattern)return;
+    setColors(emptyColors(pattern));setHistory([]);setConfirm(null);setMessage('색칠한 내용을 모두 지웠어요.');
+  };
+  const returnToPicker=()=>{setSelectedId(null);setColors({});setHistory([]);setConfirm(null);setMessage('마음에 드는 문양을 골라 보세요.')};
+  const askForPicker=()=>hasColor?setConfirm('change'):returnToPicker();
+  const exportSvg=()=>{
+    if(!pattern)return'';
+    const paths=pattern.regions.map(region=>`<path d="${region.path}" fill="${colors[region.id]??WHITE}" stroke="#232a35" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>`).join('');
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 100 100"><rect width="100" height="100" fill="#fff"/>${paths}</svg>`;
+  };
+  const save=async()=>{
+    if(!pattern)return;
+    try{
+      const blob=new Blob([exportSvg()],{type:'image/svg+xml'});const source=URL.createObjectURL(blob);const image=new Image();
+      await new Promise<void>((resolve,reject)=>{image.onload=()=>resolve();image.onerror=()=>reject(new Error('image'));image.src=source});
+      const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=1200;const context=canvas.getContext('2d');if(!context)throw new Error('canvas');
+      context.fillStyle='#fff';context.fillRect(0,0,1200,1200);context.drawImage(image,0,0,1200,1200);URL.revokeObjectURL(source);
+      const png=await new Promise<Blob|null>(resolve=>canvas.toBlob(resolve,'image/png'));if(!png)throw new Error('png');
+      const url=URL.createObjectURL(png);const link=document.createElement('a');link.href=url;link.download='우리나라_전통문양_색칠작품.png';link.hidden=true;document.body.appendChild(link);link.click();link.remove();window.setTimeout(()=>URL.revokeObjectURL(url),1200);
+      setCelebrate(true);setMessage('멋진 전통문양을 완성했어요!');window.setTimeout(()=>setCelebrate(false),1000);
+    }catch{setMessage('저장하지 못했어요. 다시 눌러주세요.')}
+  };
+
+  return <main className="activity tp-app">
+    <header className="topbar"><HomeIconButton onClick={home}/><div className="activity-title"><span>✿</span><h1>전통문양 색칠하기</h1><span>✿</span></div><SoundIconButton soundOn={soundOn} onClick={toggleSound} className="round-action sound-only"/></header>
+    {!pattern?<PatternPicker onChoose={choose}/>:<section className="tp-coloring">
+      <div className="tp-coloring-heading"><div><h2>{pattern.name}</h2><p aria-live="polite">{message}</p></div><Button variant="outline" onPointerUp={askForPicker}>다른 문양 고르기</Button></div>
+      <div className="tp-coloring-layout"><section className="tp-canvas-card"><PatternSvg pattern={pattern} colors={colors} interactive onFill={fill}/></section><aside className="tp-palette"><h3>무슨 색으로 칠할까요?</h3><div>{palette.map(([name,value])=><button key={name} type="button" aria-label={`${name} 선택`} aria-pressed={selectedColor===value} className={selectedColor===value?'active':''} onPointerUp={()=>{setSelectedColor(value);setMessage(`${name}을 골랐어요. 칠할 곳을 눌러 보세요.`)}}><span style={{background:value}}>{selectedColor===value?'✓':''}</span><b>{name}</b></button>)}</div></aside></div>
+      <div className="tp-actions"><Button variant="outline" onPointerUp={undo} disabled={!history.length}>되돌리기</Button><Button variant="outline" onPointerUp={()=>setConfirm('clear')} disabled={!hasColor}>모두 지우기</Button><Button variant="outline" onPointerUp={askForPicker}>다른 문양 고르기</Button><Button className="tp-save" onPointerUp={save}>내 문양 저장하기</Button></div>
+    </section>}
+    {confirm&&<dialog open className="tp-dialog"><div><h2>{confirm==='clear'?'색칠한 내용을 모두 지울까요?':'다른 문양을 고를까요?'}</h2><div className="tp-confirm"><Button variant="outline" onPointerUp={()=>setConfirm(null)}>계속 색칠하기</Button><Button onPointerUp={confirm==='clear'?clear:returnToPicker}>{confirm==='clear'?'모두 지우기':'다른 문양 고르기'}</Button></div></div></dialog>}
+    {celebrate&&<div className="tp-complete" aria-live="polite"><div>★　✿　★</div><strong>멋진 전통문양을 완성했어요!</strong></div>}
+  </main>;
 }
