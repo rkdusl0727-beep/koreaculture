@@ -7,3 +7,4 @@
 @media(max-width:720px){.tp-pattern-grid{grid-template-columns:1fr 1fr;gap:10px}.tp-pattern-grid button{padding:8px}.tp-pattern-grid img{height:125px}.tp-coloring-heading{align-items:flex-start}.tp-coloring-heading>button{display:none}.tp-canvas-card{padding:16px}.tp-palette{padding:12px}.tp-palette>div{grid-template-columns:repeat(3,1fr)}.tp-actions{grid-template-columns:1fr 1fr}.tp-confirm{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.tp-complete{animation:none}.tp-pattern-grid button:hover{transform:none}}
 .tp-coloring-canvas{display:block;width:100%;height:100%;max-width:690px;max-height:690px;object-fit:contain;cursor:pointer;touch-action:manipulation}
+.tp-coloring-heading .tp-meaning{max-width:950px;margin-top:5px;color:#3b5f4e;font-size:clamp(.95rem,1.25vw,1.1rem);line-height:1.45}
