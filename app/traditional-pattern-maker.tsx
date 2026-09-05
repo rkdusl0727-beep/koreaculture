@@ -10,7 +10,7 @@ import './traditional-pattern-maker.css';
 
 type Props={home:()=>void;soundOn:boolean;toggleSound:()=>void};
 type Confirm='clear'|'change'|null;
-type ColoringTool='crayon'|'pastel'|'watercolor'|'marker';
+type ColoringTool='crayon'|'watercolor'|'marker';
 type FillAction={x:number;y:number;color:string;tool:ColoringTool};
 
 const palette=[
@@ -20,10 +20,9 @@ const palette=[
 ] as const;
 
 const coloringTools:readonly {id:ColoringTool;name:string;icon:string;description:string}[]=[
-  {id:'crayon',name:'크레파스',icon:'🖍️',description:'도톰하고 까슬까슬하게 칠해져요.'},
-  {id:'pastel',name:'파스텔',icon:'▰',description:'부드럽고 보송보송하게 칠해져요.'},
-  {id:'watercolor',name:'물감',icon:'🎨',description:'맑고 살짝 번진 듯 칠해져요.'},
-  {id:'marker',name:'사인펜',icon:'🖊️',description:'선명하고 고르게 칠해져요.'},
+  {id:'crayon',name:'크레파스',icon:'🖍️',description:'종이결이 보이고, 힘에 따라 진하고 연한 획이 겹쳐져요.'},
+  {id:'watercolor',name:'물감',icon:'🎨',description:'물이 번진 것처럼 맑은 농담과 진한 가장자리가 생겨요.'},
+  {id:'marker',name:'싸인펜',icon:'🖊️',description:'선명한 잉크가 고르게 칠해지고 겹친 획은 조금 진해져요.'},
 ] as const;
 
 const rgb=(color:string)=>[Number.parseInt(color.slice(1,3),16),Number.parseInt(color.slice(3,5),16),Number.parseInt(color.slice(5,7),16)] as const;
@@ -35,23 +34,23 @@ const textureNoise=(x:number,y:number,seed:number)=>{
   return ((value^(value>>>16))>>>0)/4294967295;
 };
 
-function floodFill(context:CanvasRenderingContext2D,startX:number,startY:number,color:string,tool:ColoringTool){
+function floodFill(context:CanvasRenderingContext2D,startX:number,startY:number,color:string,tool:ColoringTool,lineArt?:ImageData|null){
   const {width,height}=context.canvas;
   const image=context.getImageData(0,0,width,height);
   const data=image.data;
   const start=(startY*width+startX)*4;
-  const target=[data[start],data[start+1],data[start+2]] as const;
+  const source=lineArt?.data??data;
+  const target=[source[start],source[start+1],source[start+2]] as const;
   const fill=rgb(color);
   const targetMax=Math.max(target[0],target[1],target[2]);
   const targetMin=Math.min(target[0],target[1],target[2]);
-  // 검은 외곽선은 막되, 이미 칠한 선명한 색 영역은 다시 칠할 수 있게 한다.
+  // 원본 선 그림을 마스크로 사용해 질감이 강해도 같은 영역 전체를 다시 칠할 수 있게 한다.
   if(targetMax<150||(targetMax-targetMin<35&&targetMax<220))return false;
-  if(Math.max(Math.abs(target[0]-fill[0]),Math.abs(target[1]-fill[1]),Math.abs(target[2]-fill[2]))<8)return false;
   const total=width*height;
   const queue=new Int32Array(total);
   const visited=new Uint8Array(total);
   let head=0,tail=0,touchesEdge=false;
-  const matches=(index:number)=>{const offset=index*4;return data[offset+3]>220&&Math.max(Math.abs(data[offset]-target[0]),Math.abs(data[offset+1]-target[1]),Math.abs(data[offset+2]-target[2]))<=28};
+  const matches=(index:number)=>{const offset=index*4;return source[offset+3]>220&&Math.max(Math.abs(source[offset]-target[0]),Math.abs(source[offset+1]-target[1]),Math.abs(source[offset+2]-target[2]))<=28};
   const add=(index:number)=>{if(index<0||index>=total||visited[index]||!matches(index))return;visited[index]=1;queue[tail++]=index};
   add(startY*width+startX);
   while(head<tail){const index=queue[head++];const x=index%width,y=Math.floor(index/width);if(x===0||y===0||x===width-1||y===height-1)touchesEdge=true;if(x>0)add(index-1);if(x<width-1)add(index+1);if(y>0)add(index-width);if(y<height-1)add(index+width)}
@@ -62,15 +61,23 @@ function floodFill(context:CanvasRenderingContext2D,startX:number,startY:number,
     const noise=textureNoise(x,y,seed);
     let blendWithWhite=0,shade=1;
     if(tool==='crayon'){
-      shade=.91+noise*.14;
-      if(textureNoise(x*3,y*5,seed+17)>.965)blendWithWhite=.32;
-    }else if(tool==='pastel'){
-      blendWithWhite=.18+noise*.12;
-      shade=.97+textureNoise(x*2,y*2,seed+29)*.06;
+      const diagonal=(Math.sin((x*.86+y*.3+seed)/7.5)+1)/2;
+      const crossing=(Math.sin((-x*.22+y+seed)/18)+1)/2;
+      const pressure=.58+diagonal*.25+crossing*.17;
+      blendWithWhite=.08+(1-pressure)*.48;
+      shade=.77+pressure*.27;
+      const paperGrain=textureNoise(x*5,y*7,seed+17);
+      if(paperGrain>.9)blendWithWhite=Math.min(.82,blendWithWhite+.32+(paperGrain-.9)*2.4);
+      if(textureNoise(x,y,seed+71)>.985)shade=.72;
     }else if(tool==='watercolor'){
-      blendWithWhite=.28+noise*.1;
+      const wash=(Math.sin((x+seed)/43)+Math.sin((y-seed)/51)+2)/4;
+      blendWithWhite=.25+wash*.22+noise*.06;
       const boundary=x===0||y===0||x===width-1||y===height-1||!visited[index-1]||!visited[index+1]||!visited[index-width]||!visited[index+width];
-      shade=boundary?.9:.98+textureNoise(x,y,seed+43)*.06;
+      shade=boundary?.78:.94+textureNoise(x,y,seed+43)*.12;
+    }else{
+      const markerStroke=(Math.sin((x*.18+y+seed)/13)+1)/2;
+      shade=.92+markerStroke*.09;
+      blendWithWhite=.015+noise*.025;
     }
     data[offset]=Math.max(0,Math.min(255,mix(fill[0]*shade,255,blendWithWhite)));
     data[offset+1]=Math.max(0,Math.min(255,mix(fill[1]*shade,255,blendWithWhite)));
@@ -83,10 +90,11 @@ function floodFill(context:CanvasRenderingContext2D,startX:number,startY:number,
 
 function PatternCanvas({pattern,actions,color,tool,canvasRef,onFill,onInvalid}:{pattern:TraditionalPattern;actions:FillAction[];color:string;tool:ColoringTool;canvasRef:React.RefObject<HTMLCanvasElement|null>;onFill:(action:FillAction)=>void;onInvalid:()=>void}){
   const imageRef=useRef<HTMLImageElement|null>(null);
+  const lineArtRef=useRef<ImageData|null>(null);
   const [ready,setReady]=useState(false);
-  useEffect(()=>{let active=true;setReady(false);const image=new Image();image.onload=()=>{if(!active)return;imageRef.current=image;const canvas=canvasRef.current;if(canvas){canvas.width=image.naturalWidth;canvas.height=image.naturalHeight}setReady(true)};image.src=pattern.preview;return()=>{active=false}},[pattern.preview,canvasRef]);
-  useEffect(()=>{if(!ready||!imageRef.current||!canvasRef.current)return;const canvas=canvasRef.current,context=canvas.getContext('2d',{willReadFrequently:true});if(!context)return;context.clearRect(0,0,canvas.width,canvas.height);context.drawImage(imageRef.current,0,0,canvas.width,canvas.height);actions.forEach(action=>floodFill(context,action.x,action.y,action.color,action.tool))},[actions,ready,canvasRef]);
-  const fillAt=(event:React.PointerEvent<HTMLCanvasElement>)=>{const canvas=canvasRef.current,context=canvas?.getContext('2d',{willReadFrequently:true});if(!canvas||!context||!ready)return;const rect=canvas.getBoundingClientRect();const x=Math.max(0,Math.min(canvas.width-1,Math.floor((event.clientX-rect.left)/rect.width*canvas.width)));const y=Math.max(0,Math.min(canvas.height-1,Math.floor((event.clientY-rect.top)/rect.height*canvas.height)));if(floodFill(context,x,y,color,tool))onFill({x,y,color,tool});else onInvalid()};
+  useEffect(()=>{let active=true;setReady(false);lineArtRef.current=null;const image=new Image();image.onload=()=>{if(!active)return;imageRef.current=image;const canvas=canvasRef.current;if(canvas){canvas.width=image.naturalWidth;canvas.height=image.naturalHeight}setReady(true)};image.src=pattern.preview;return()=>{active=false}},[pattern.preview,canvasRef]);
+  useEffect(()=>{if(!ready||!imageRef.current||!canvasRef.current)return;const canvas=canvasRef.current,context=canvas.getContext('2d',{willReadFrequently:true});if(!context)return;context.clearRect(0,0,canvas.width,canvas.height);context.drawImage(imageRef.current,0,0,canvas.width,canvas.height);lineArtRef.current=context.getImageData(0,0,canvas.width,canvas.height);actions.forEach(action=>floodFill(context,action.x,action.y,action.color,action.tool,lineArtRef.current))},[actions,ready,canvasRef]);
+  const fillAt=(event:React.PointerEvent<HTMLCanvasElement>)=>{const canvas=canvasRef.current,context=canvas?.getContext('2d',{willReadFrequently:true});if(!canvas||!context||!ready)return;const rect=canvas.getBoundingClientRect();const x=Math.max(0,Math.min(canvas.width-1,Math.floor((event.clientX-rect.left)/rect.width*canvas.width)));const y=Math.max(0,Math.min(canvas.height-1,Math.floor((event.clientY-rect.top)/rect.height*canvas.height)));if(floodFill(context,x,y,color,tool,lineArtRef.current))onFill({x,y,color,tool});else onInvalid()};
   return <canvas ref={canvasRef} className="tp-coloring-canvas" role="img" aria-label={`${pattern.name} 색칠 그림`} onPointerUp={fillAt}/>;
 }
 
