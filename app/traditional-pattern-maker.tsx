@@ -57,15 +57,10 @@ function drawStroke(context:CanvasRenderingContext2D,stroke:StrokeAction,seed:nu
     line(context,stroke.points,stroke.color,width*.98,.08,Math.sin(seed)*1.5,Math.cos(seed)*1.5);
     return;
   }
-  // 크레파스: 고른 색의 반투명 획과 작은 종이결을 여러 겹 쌓는다.
-  line(context,stroke.points,stroke.color,width,.42);
-  for(let strand=0;strand<9;strand++){
-    const angle=textureNoise(strand,seed,31)*Math.PI*2;
-    const radius=(textureNoise(seed,strand,47)-.5)*width*.28;
-    line(context,stroke.points,stroke.color,Math.max(1,width*(.035+textureNoise(strand,seed,73)*.055)),.16,Math.cos(angle)*radius,Math.sin(angle)*radius);
-  }
+  // 크레파스: 가느다란 실선 없이 넓은 색 면과 둥근 종이결만 남긴다.
+  line(context,stroke.points,stroke.color,width,.46);
   context.save();context.fillStyle=stroke.color;
-  stroke.points.forEach((point,index)=>{for(let grain=0;grain<4;grain++){const angle=textureNoise(index,grain,seed+11)*Math.PI*2;const radius=textureNoise(grain,index,seed+29)*width*.48;context.globalAlpha=.08+textureNoise(index,grain,seed+91)*.12;context.beginPath();context.arc(point.x+Math.cos(angle)*radius,point.y+Math.sin(angle)*radius,Math.max(1,width*.025),0,Math.PI*2);context.fill()}});
+  stroke.points.forEach((point,index)=>{for(let grain=0;grain<6;grain++){const angle=textureNoise(index,grain,seed+11)*Math.PI*2;const radius=textureNoise(grain,index,seed+29)*width*.44;context.globalAlpha=.05+textureNoise(index,grain,seed+91)*.09;context.beginPath();context.arc(point.x+Math.cos(angle)*radius,point.y+Math.sin(angle)*radius,Math.max(1.5,width*(.03+textureNoise(grain,index,seed+53)*.025)),0,Math.PI*2);context.fill()}});
   context.restore();
 }
 
