@@ -68,3 +68,8 @@
 .waiting-slots{display:flex;align-items:center;justify-content:center;gap:3px;min-height:34px}.team-station .piece-pick{background:#fff4bd;border-radius:8px;padding:3px}.team-station .start-ready{min-height:39px}.team-station .start-ready.has-ready{background:#e9f7e9;border-radius:8px}.phase-setup .team-station .start-ready .starter-slots:empty:after{content:'여기로 이동';color:#70675a;font-size:9px;font-weight:900}
 .ready-anchor{z-index:16;width:9.5%}.ready-anchor small{position:absolute;left:50%;top:92%;transform:translateX(-50%);min-width:58px;padding:2px 5px;border:2px solid currentColor;border-radius:8px;background:#fff;color:#202936;text-align:center;font-size:9px;font-weight:900;white-space:nowrap}.ready-anchor.red small{color:#d8453d}.ready-anchor.blue small{color:#2878b8}.board-ready-note{font-size:9px;font-weight:900;color:#318b61;white-space:nowrap}
 .pawn-anchor{pointer-events:none}.pawn-anchor .png-pawn.selectable{pointer-events:auto}
+
+/* The source mat has uneven transparent padding on its right and bottom.
+   Crop only that empty canvas so the visible square is centered and fills the
+   throw area; both parent layers keep overflow hidden. */
+.throw-mat-inner .mat-png{inset:auto;left:-1.7%;top:-.4%;width:115.4%;height:115.4%;max-width:none;max-height:none;object-fit:fill}
