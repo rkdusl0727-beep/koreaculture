@@ -54,7 +54,7 @@ export const traditionalPatterns:readonly TraditionalPattern[]=[
     'M18 62C18 72 24 79 33 82C36 73 40 68 46 64C35 66 25 66 18 62Z',
     'M20 31C13 36 11 44 14 52C21 48 28 48 35 52C28 44 23 38 20 31Z',
   ])},
-  {id:'butterfly',name:'나비문양',meaning:'나비는 꽃 사이를 훨훨 날아요. 기쁘고 행복하게 살기를 바라는 뜻이에요.',preview:'/traditional-patterns/generated-v2/butterfly-pattern-v2.png',regions:regions([
+  {id:'butterfly',name:'나비문양',meaning:'나비는 꽃 사이를 훨훨 날아요. 기쁘고 행복하게 살기를 바라는 뜻이에요.',preview:'/traditional-patterns/generated-v2/butterfly-pattern-v3.png',regions:regions([
     'M47 33C48 27 52 27 53 33L56 70C54 79 46 79 44 70Z',
     'M44 45C35 21 12 20 14 44C16 58 31 62 44 53Z',
     'M56 45C65 21 88 20 86 44C84 58 69 62 56 53Z',
