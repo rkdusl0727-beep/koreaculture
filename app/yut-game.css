@@ -85,3 +85,21 @@
 .png-sticks>span{width:16%;height:56%;overflow:visible}
 .png-sticks>span>img{object-fit:contain;object-position:center}
 @media(max-width:650px){.png-sticks>span{width:18%;height:58%}}
+
+/* The gameplay board owns the main viewport. Controls no longer occupy a
+   permanent right column; they follow the board in one compact section. */
+.png-game{height:auto;min-height:calc(100vh - 108px);display:flex;flex-direction:column;align-items:center;gap:14px;padding:8px 16px 28px}
+.game-board-column{width:100%}
+.board-heading{width:min(94vw,1040px);height:42px}
+.traditional-board{width:min(94vw,calc(100vh - 158px),1040px);height:auto;max-width:none;flex:none}
+.game-side{width:min(1200px,96vw);display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.72fr);grid-template-rows:auto auto auto;gap:10px 14px;padding:14px;border:3px solid #202936;border-radius:24px;background:#fffdf7}
+.game-side .turn-box{grid-column:1/-1;grid-row:1}
+.game-side .png-throw-zone{grid-column:1;grid-row:2}
+.game-side .result-guide{grid-column:2;grid-row:2;align-content:start}
+.game-side .waiting-area{grid-column:1/-1;grid-row:3}
+.game-side .side-actions{grid-column:1/-1;grid-row:4}
+@media(max-width:760px){
+  .png-game{padding-inline:8px}.board-heading{width:96vw}.traditional-board{width:96vw}
+  .game-side{width:96vw;grid-template-columns:1fr;padding:9px}
+  .game-side .turn-box,.game-side .png-throw-zone,.game-side .result-guide,.game-side .waiting-area,.game-side .side-actions{grid-column:1;grid-row:auto}
+}
