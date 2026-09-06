@@ -67,3 +67,8 @@
 .sound-icon-button img{display:block;width:100%;height:100%;object-fit:contain;object-position:center}
 .sound-icon-button span{display:none!important}
 .topbar .sound-icon-button,.heritage-top .sound-icon-button{justify-self:end}
+
+/* The completion badge is the single active way back to puzzle selection. */
+.map-complete-panel .map-badge{border:0;box-shadow:0 6px 0 #206b4a;cursor:pointer}
+.map-complete-panel .map-badge:hover{transform:translateY(-2px)}
+.map-complete-panel .map-badge:focus-visible{outline:5px solid var(--yellow);outline-offset:4px}

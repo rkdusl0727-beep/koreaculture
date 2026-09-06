@@ -57,11 +57,11 @@ function stampCrayon(context:CanvasRenderingContext2D,stroke:StrokeAction,width:
     const radius=width*(.42+point.pressure*.09);
     context.globalAlpha=.2;
     context.beginPath();context.arc(point.x,point.y,radius,0,Math.PI*2);context.fill();
-    for(let grain=0;grain<5;grain++){
+    for(let grain=0;grain<3;grain++){
       const angle=textureNoise(index,grain,seed+11)*Math.PI*2;
       const grainRadius=textureNoise(grain,index,seed+29)*radius*.88;
-      context.globalAlpha=.035+textureNoise(index,grain,seed+91)*.055;
-      context.beginPath();context.arc(point.x+Math.cos(angle)*grainRadius,point.y+Math.sin(angle)*grainRadius,Math.max(1.5,width*(.035+textureNoise(grain,index,seed+53)*.025)),0,Math.PI*2);context.fill();
+      context.globalAlpha=.025+textureNoise(index,grain,seed+91)*.035;
+      context.beginPath();context.arc(point.x+Math.cos(angle)*grainRadius,point.y+Math.sin(angle)*grainRadius,width*(.11+textureNoise(grain,index,seed+53)*.07),0,Math.PI*2);context.fill();
     }
   });
   context.restore();
