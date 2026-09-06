@@ -40,6 +40,33 @@ function line(context:CanvasRenderingContext2D,points:DrawPoint[],color:string,w
   context.restore();
 }
 
+function stampCrayon(context:CanvasRenderingContext2D,stroke:StrokeAction,width:number,seed:number){
+  const stamps:DrawPoint[]=[];
+  if(stroke.points.length===1)stamps.push(stroke.points[0]);
+  for(let index=1;index<stroke.points.length;index++){
+    const from=stroke.points[index-1],to=stroke.points[index];
+    const distance=Math.hypot(to.x-from.x,to.y-from.y);
+    const steps=Math.max(1,Math.ceil(distance/Math.max(3,width*.16)));
+    for(let step=1;step<=steps;step++){
+      const ratio=step/steps;
+      stamps.push({x:from.x+(to.x-from.x)*ratio,y:from.y+(to.y-from.y)*ratio,pressure:from.pressure+(to.pressure-from.pressure)*ratio});
+    }
+  }
+  context.save();context.fillStyle=stroke.color;
+  stamps.forEach((point,index)=>{
+    const radius=width*(.42+point.pressure*.09);
+    context.globalAlpha=.2;
+    context.beginPath();context.arc(point.x,point.y,radius,0,Math.PI*2);context.fill();
+    for(let grain=0;grain<5;grain++){
+      const angle=textureNoise(index,grain,seed+11)*Math.PI*2;
+      const grainRadius=textureNoise(grain,index,seed+29)*radius*.88;
+      context.globalAlpha=.035+textureNoise(index,grain,seed+91)*.055;
+      context.beginPath();context.arc(point.x+Math.cos(angle)*grainRadius,point.y+Math.sin(angle)*grainRadius,Math.max(1.5,width*(.035+textureNoise(grain,index,seed+53)*.025)),0,Math.PI*2);context.fill();
+    }
+  });
+  context.restore();
+}
+
 function drawStroke(context:CanvasRenderingContext2D,stroke:StrokeAction,seed:number){
   const pressure=stroke.points.reduce((sum,point)=>sum+point.pressure,0)/Math.max(1,stroke.points.length);
   const width=stroke.size*(.78+pressure*.3);
@@ -57,11 +84,8 @@ function drawStroke(context:CanvasRenderingContext2D,stroke:StrokeAction,seed:nu
     line(context,stroke.points,stroke.color,width*.98,.08,Math.sin(seed)*1.5,Math.cos(seed)*1.5);
     return;
   }
-  // 크레파스: 가느다란 실선 없이 넓은 색 면과 둥근 종이결만 남긴다.
-  line(context,stroke.points,stroke.color,width,.46);
-  context.save();context.fillStyle=stroke.color;
-  stroke.points.forEach((point,index)=>{for(let grain=0;grain<6;grain++){const angle=textureNoise(index,grain,seed+11)*Math.PI*2;const radius=textureNoise(grain,index,seed+29)*width*.44;context.globalAlpha=.05+textureNoise(index,grain,seed+91)*.09;context.beginPath();context.arc(point.x+Math.cos(angle)*radius,point.y+Math.sin(angle)*radius,Math.max(1.5,width*(.03+textureNoise(grain,index,seed+53)*.025)),0,Math.PI*2);context.fill()}});
-  context.restore();
+  // 크레파스는 선 경로를 쓰지 않고 굵은 색 입자를 이어 붙여 면으로 칠한다.
+  stampCrayon(context,stroke,width,seed);
 }
 
 function PatternCanvas({pattern,actions,color,tool,size,canvasRef,onStroke}:{pattern:TraditionalPattern;actions:StrokeAction[];color:string;tool:ColoringTool;size:number;canvasRef:React.RefObject<HTMLCanvasElement|null>;onStroke:(action:StrokeAction)=>void}){
