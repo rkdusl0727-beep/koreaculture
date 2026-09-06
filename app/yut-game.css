@@ -78,3 +78,12 @@
 .png-throw-zone{grid-template-rows:minmax(287px,1fr);grid-template-areas:'mat button'}
 @media(min-width:1051px) and (max-height:900px){.png-throw-zone{grid-template-rows:minmax(237px,1fr);grid-template-areas:'mat button'}}
 @media(max-width:1050px){.png-throw-zone{grid-template-rows:auto;grid-template-areas:'mat button'}}
+
+/* The stick PNGs share the mat's square canvas and contain large transparent
+   margins. Crop those margins inside each rotated wrapper so every stick is
+   large enough for a child to read while remaining clipped to the yut mat. */
+.png-sticks>span{width:16%;height:56%;overflow:hidden}
+.png-sticks>span>img{object-fit:cover}
+.png-sticks>span>img[src$="yut_round.png"]{object-position:37.5% 50%}
+.png-sticks>span>img[src$="yut_flat.png"],.png-sticks>span>img[src$="yut_backdo.png"]{object-position:61.5% 50%}
+@media(max-width:650px){.png-sticks>span{width:18%;height:58%}}
