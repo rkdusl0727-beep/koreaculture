@@ -3,7 +3,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {Button} from '@/components/ui/button';
 import {setNormalAudioSpeed,speakKorean,stopKoreanSpeech} from './korean-speech';
-import {HERITAGE_CLUES,HERITAGE_TREASURES,HeritageTreasure,shuffled} from './heritage-data';
+import {HERITAGE_CLUES,HERITAGE_TREASURES,HeritageTreasure,newHiddenPlacements,shuffled} from './heritage-data';
 import HomeIconButton from './home-icon-button';
 import SoundIconButton from './sound-icon-button';
 import {playCelebrationSound,playDingDongDaeng} from './correct-sound';
@@ -13,7 +13,6 @@ type Activity='menu'|'hidden'|'memory-select'|'memory';
 type Props={home:()=>void;soundOn:boolean;toggleSound:()=>void};
 
 const playDingDong=playDingDongDaeng;
-function newHiddenPlacements(previous:Record<string,number>={}){const used:Array<{x:number;y:number;size:number}>=[];return Object.fromEntries(HERITAGE_TREASURES.map(treasure=>{const candidates=shuffled(treasure.positions.map((point,index)=>({point,index})));const choice=candidates.find(({point,index})=>index!==previous[treasure.id]&&used.every(other=>Math.hypot(point.x-other.x,point.y-other.y)>(treasure.size+other.size)/2+3))||candidates.find(({index})=>index!==previous[treasure.id])||candidates[0];used.push({...choice.point,size:treasure.size});return[treasure.id,choice.index]}))}
 
 function HeritageTop({home,soundOn,toggleSound}:{home:()=>void;soundOn:boolean;toggleSound:()=>void}){
   return <header className="heritage-top"><HomeIconButton onClick={home}/><h1>문화재 탐험대</h1><SoundIconButton soundOn={soundOn} onClick={toggleSound}/></header>;

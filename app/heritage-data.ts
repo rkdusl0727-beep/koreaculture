@@ -32,6 +32,35 @@ export const HERITAGE_CLUES=[
   '사찰 마당의 돌 구조물을 찾아보세요.',
 ];
 
+type HiddenPlacement={point:{x:number;y:number};index:number};
+
+export function hiddenPlacementsOverlap(placements:Record<string,number>){
+  const placed=HERITAGE_TREASURES.map(treasure=>({treasure,point:treasure.positions[placements[treasure.id]??0]}));
+  return placed.some((current,index)=>placed.slice(index+1).some(other=>Math.hypot(current.point.x-other.point.x,current.point.y-other.point.y)<(current.treasure.size+other.treasure.size)/2+3));
+}
+
+export function newHiddenPlacements(previous:Record<string,number>={}){
+  const order=[...HERITAGE_TREASURES].sort((a,b)=>a.positions.length-b.positions.length||b.size-a.size);
+  const chosen:Record<string,number>={};
+  const used:Array<{x:number;y:number;size:number}>=[];
+  const place=(orderIndex:number):boolean=>{
+    if(orderIndex===order.length)return true;
+    const treasure=order[orderIndex];
+    const candidates:HiddenPlacement[]=shuffled(treasure.positions.map((point,index)=>({point,index}))).sort((a,b)=>Number(a.index===previous[treasure.id])-Number(b.index===previous[treasure.id]));
+    for(const candidate of candidates){
+      if(!used.every(other=>Math.hypot(candidate.point.x-other.x,candidate.point.y-other.y)>=(treasure.size+other.size)/2+3))continue;
+      chosen[treasure.id]=candidate.index;
+      used.push({...candidate.point,size:treasure.size});
+      if(place(orderIndex+1))return true;
+      used.pop();
+      delete chosen[treasure.id];
+    }
+    return false;
+  };
+  if(!place(0))throw new Error('문화재가 겹치지 않는 배치를 만들 수 없습니다.');
+  return chosen;
+}
+
 export function shuffled<T>(items:T[]){
   const next=[...items];
   for(let i=next.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[next[i],next[j]]=[next[j],next[i]]}

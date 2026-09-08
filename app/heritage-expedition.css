@@ -22,6 +22,7 @@
 
 /* Clear, grounded heritage art without overlapping highlight rings. */
 .hidden-target.found{filter:saturate(1) brightness(1.04) drop-shadow(0 0 7px white)}
+.hidden-target.found{pointer-events:none}
 .hidden-target.focused::after{border-color:white;box-shadow:0 0 18px white}
 .hidden-target span{right:-2px;top:-2px;width:24px;height:24px;font-size:.9rem;box-shadow:0 0 0 3px white}
 .hidden-goryeo-celadon img,.hidden-joseon-white-porcelain img{object-position:center bottom}
