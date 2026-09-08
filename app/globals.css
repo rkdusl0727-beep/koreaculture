@@ -72,3 +72,6 @@
 .map-complete-panel .map-badge{border:0;box-shadow:0 6px 0 #206b4a;cursor:pointer}
 .map-complete-panel .map-badge:hover{transform:translateY(-2px)}
 .map-complete-panel .map-badge:focus-visible{outline:5px solid var(--yellow);outline-offset:4px}
+
+.copyright-footer{padding:18px 24px 22px;text-align:center;color:#716653;background:var(--paper);border-top:1px solid rgba(35,42,53,.12)}
+.copyright-footer small{font-size:.875rem;font-weight:700;letter-spacing:.01em}

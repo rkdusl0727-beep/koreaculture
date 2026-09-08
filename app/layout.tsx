@@ -34,7 +34,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body>
+        {children}
+        <footer className="copyright-footer">
+          <small>© 2026 우리나라 문화 탐험대. All rights reserved.</small>
+        </footer>
+      </body>
     </html>
   );
 }
